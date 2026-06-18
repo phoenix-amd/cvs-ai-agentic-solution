@@ -1,0 +1,71 @@
+{
+  "permissions": {
+    "allow": [
+      "cvs list",
+      "cvs list *",
+      "cvs copy-config --list",
+      "cvs copy-config *",
+      "cvs --version",
+      "cvs generate cluster_json*",
+      "cvs generate heatmap*",
+      "cat *.json",
+      "cat *.log",
+      "cat *.html",
+      "ls *",
+      "pwd",
+      "python3 *",
+      "pip install*",
+      "pip list*",
+      "ruff check*",
+      "ruff format*",
+      "pytest cvs/*/unittests/*",
+      "git *"
+    ],
+    "ask": [
+      "cvs run *",
+      "cvs exec *",
+      "ssh *",
+      "scp *",
+      "docker *",
+      "cvs monitor *",
+      "cvs scp *",
+      "sudo *",
+      "pip uninstall*"
+    ],
+    "deny": [
+      "rm -rf /",
+      "rm -rf /*",
+      "rm -rf ~",
+      "rm -rf ~/*",
+      "mkfs*",
+      "fdisk*",
+      "dd if=*",
+      "reboot",
+      "shutdown*",
+      "halt",
+      "poweroff",
+      "init 0",
+      "init 6",
+      "systemctl reboot",
+      "systemctl poweroff",
+      "git push --force*",
+      "git push -f*",
+      "chmod -R 777 /",
+      "chown -R * /"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": ".claude/hooks/post-edit.sh \"$FILE_PATH\""
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": ".claude/hooks/safety-guard.sh \"$COMMAND\""
+      }
+    ]
+  }
+}
