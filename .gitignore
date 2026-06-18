@@ -20,3 +20,8 @@ cluster.json
 results/
 *.html
 !README.md
+!CHANGELOG.md
+!FEATURES.md
+
+# CVS agent local config (credentials, cluster profiles — never commit)
+.cvs_agent/

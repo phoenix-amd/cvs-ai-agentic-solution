@@ -136,11 +136,47 @@ Then just talk:
 Works with upstream CVS as-is. When CVS releases a new version, just
 `pip install --upgrade cvs` — no fork to rebase, no merge conflicts.
 
+### First-Run Onboarding
+On first use, the agent collects SSH credentials, head/worker node IPs,
+and Jira project keys from the user — then stores them in a local profile
+(`~/.cvs_agent/`). No credentials are ever committed to git. Supports
+multiple cluster profiles for teams managing several clusters.
+
 ### Auto-Heal Playbook
 When tests fail, the agent doesn't just report — it attempts safe fixes:
 - **Auto-fix**: NUMA balancing, docker pull, SSH key permissions
 - **Suggest**: Firewall rules, environment variables, GRUB config
 - **Escalate**: Reboots, driver installs, hardware issues
+
+### Overnight Autonomous Mode
+Start a full cluster qualification before leaving for the night. The agent:
+1. Wraps all tests in **tmux** on the head node (survives disconnects)
+2. Runs suites sequentially with auto-heal on failures
+3. Re-runs failed tests after auto-heal succeeds
+4. Collects diagnostics and creates Jira tickets for hardware issues
+5. Writes a consolidated summary — results ready in the morning
+
+```
+You:    "Run full cluster qualification overnight"
+Agent:  Launches watchdog in tmux → you disconnect → reconnect in the morning
+        → summary report with pass/fail per suite is waiting for you
+```
+
+### Connection Resilience
+Long-running tests (AGFHC, training, full RCCL sweeps) are wrapped in
+**tmux sessions** on the head node. If your laptop disconnects, VPN drops,
+or SSH times out — the test keeps running. Reconnect anytime to check
+progress or collect results.
+
+### Jira Escalation for Hardware Failures
+When the agent detects a **real hardware issue** (GPU not detected, HBM
+errors, PCIe link degraded, IB port down, RAS errors), it automatically:
+1. Collects diagnostics (`rocm-smi`, `dmesg`, `ibstat`, `lspci`)
+2. Creates a Jira ticket with failure summary
+3. Attaches all diagnostic logs to the ticket
+4. Tags the correct component from the cluster profile
+
+Config/software issues are fixed in place — only hardware issues get escalated.
 
 ### Pre-Built Workflows
 One command triggers multi-suite pipelines with conditional logic:
@@ -153,19 +189,33 @@ One command triggers multi-suite pipelines with conditional logic:
 For multi-node clusters, tests run on ONE node first. If the canary passes,
 the full fleet runs. This catches config errors before wasting cluster time.
 
+### RCCL Pre-Run Validation
+Automatically discovers network interfaces, validates env scripts against
+actual NIC hardware (Mellanox/Broadcom/AINIC), and fixes common config
+pitfalls (`mpi_dir`, `mpi_oob_port`, `NCCL_SOCKET_IFNAME`) before running.
+
+### Smart Single-Node Handling
+Correctly interprets single-node RCCL results — reports AlgBW instead of
+BusBW, avoids false-negative failures from multi-node baseline comparisons.
+
 ### Diagnostic Collection
 On any failure, the agent auto-collects from affected nodes:
 `rocm-smi`, `ibstat`, `dmesg`, `ethtool`, `rdma link` — bundled into
 a diagnostic summary.
+
+### HTTP Report Delivery
+After every test, serves HTML reports via local HTTP server with a
+browser-ready link. Works from WSL, remote terminals, and headless
+environments where `xdg-open` is not available.
 
 ### Prompt-Injection Defense
 Cluster output is treated as DATA, never instructions. If remote node output
 contains text that looks like commands or prompt fragments, it's ignored and
 flagged.
 
-### RCCL Performance Baselines
-Built-in bandwidth targets for 2-node and single-node configurations.
-Results are compared against baselines automatically.
+> **Detailed documentation**: See [FEATURES.md](FEATURES.md) for in-depth
+> explanation of each feature — why it exists, the value it provides, and
+> how the mechanisms work under the hood (includes flow diagrams).
 
 ## Safety Model
 
@@ -181,6 +231,8 @@ Results are compared against baselines automatically.
 .
 ├── CLAUDE.md                              # Root agent instructions
 ├── README.md                              # This file
+├── FEATURES.md                            # Detailed feature docs with mechanisms
+├── CHANGELOG.md                           # Version history, fixes, features
 ├── ONENOTE_EXPORT.md                      # Formatted export for documentation
 ├── .gitignore
 └── .claude/
@@ -198,6 +250,18 @@ Results are compared against baselines automatically.
             └── SKILL.md                   # Developer workflow guide
 ```
 
+## Why Use This
+
+| Problem | Without This Tool | With This Tool |
+|---------|------------------|----------------|
+| Running overnight tests | You babysit SSH or risk losing results | Agent wraps in tmux, auto-heals, results ready at 8 AM |
+| Hardware failure at 2 AM | Nobody notices until morning standup | Agent creates Jira ticket with full diagnostics at 2:01 AM |
+| Wrong RCCL config | 3 failed attempts figuring out `mpi_dir`, `eth0`, env scripts | Agent auto-discovers interfaces, validates env scripts, runs first time |
+| New team member onboarding | Read 50 pages of CVS docs, memorize 34 suites | Say "check if the cluster is healthy" — agent does the rest |
+| Cluster qualification | 4+ hours of manual pytest commands, config editing, log parsing | "Full cluster qualification" — one command, consolidated report |
+| Single-node RCCL confusion | CVS says FAILED (false negative), you panic | Agent explains bus_bw=0 is expected, reports AlgBW correctly |
+| VPN drops mid-test | Test killed, start over | tmux keeps it running, reconnect anytime |
+
 ## Comparison with Alternatives
 
 | Feature | Raw CVS CLI | Fork-based Agent | **This Project** |
@@ -205,9 +269,14 @@ Results are compared against baselines automatically.
 | Natural language | No | Limited | Full mapping |
 | Version updates | Manual | Rebase required | `pip upgrade` — done |
 | Auto-heal | No | No | Safe fixes + escalation |
+| Overnight autonomous | No | No | tmux + watchdog + Jira |
+| Jira escalation | Manual | No | Auto-create with diagnostics |
+| Connection resilience | No | No | tmux wrapping |
+| RCCL auto-config | Manual | Partial | Full auto-discovery |
 | Pre-built workflows | No | No | 6 pipelines |
 | Canary-first | Manual | No | Built-in |
 | Diagnostics on failure | Manual | No | Auto-collected |
+| Team onboarding | Read docs | Read docs | First-run wizard |
 | Prompt-injection defense | N/A | No | Built-in |
 | Maintenance | N/A | Ongoing fork sync | Near-zero |
 
