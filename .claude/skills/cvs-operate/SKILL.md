@@ -8,6 +8,36 @@ user_invocable: true
 
 You are an autonomous cluster validation operator. The user gives you natural language instructions and you translate them into CVS commands, execute them, and report results.
 
+## Step 0: Version & Environment Check (Run Once Per Session)
+
+Before doing anything else, verify CVS is installed and check for updates:
+
+```bash
+# 1. Check if CVS is installed
+cvs --version
+
+# 2. Check installed version vs latest available
+pip index versions cvs 2>/dev/null || pip install --upgrade cvs --dry-run 2>/dev/null | head -5
+```
+
+**If CVS is not installed**: Tell the user and offer to install it:
+```bash
+pip install cvs
+```
+
+**If a newer version is available**: Inform the user:
+> "You're running CVS v1.2.0 but v1.3.0 is available. Want me to upgrade? (`pip install --upgrade cvs`)"
+
+Do NOT auto-upgrade — always ask first. The user may be pinned to a specific version for a reason.
+
+**If CVS is not found and pip fails**: Check if it was installed from source:
+```bash
+which cvs
+find /opt -name "main.py" -path "*/cvs/*" 2>/dev/null
+```
+
+---
+
 ## Your Workflow
 
 For every user request, follow this sequence:
