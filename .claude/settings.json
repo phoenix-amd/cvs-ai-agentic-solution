@@ -1,38 +1,12 @@
 {
+  "_comment": "Safety baseline for driving CVS. Read-only commands are auto-allowed; anything that touches the cluster (run/exec/ssh) requires human approval; catastrophic local commands are denied. The real controls are least-privilege SSH user + scoped sudo + these ask rules.",
   "permissions": {
-    "allow": [
-      "Bash(cvs list*)",
-      "Bash(cvs copy-config*)",
-      "Bash(cvs --version)",
-      "Bash(cvs generate*)",
-      "Bash(cat *.json)",
-      "Bash(cat *.log)",
-      "Bash(cat *.html)",
-      "Bash(ls *)",
-      "Bash(pwd)",
-      "Bash(python3 *)",
-      "Bash(pip install*)",
-      "Bash(pip list*)",
-      "Bash(ruff *)",
-      "Bash(pytest *)",
-      "Bash(git *)"
-    ],
-    "ask": [
-      "Bash(cvs run *)",
-      "Bash(cvs exec *)",
-      "Bash(ssh *)",
-      "Bash(scp *)",
-      "Bash(docker *)",
-      "Bash(cvs monitor *)",
-      "Bash(cvs scp *)",
-      "Bash(sudo *)",
-      "Bash(pip uninstall*)"
-    ],
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
-      "Bash(rm -rf ~/*)",
+      "Bash(rm -fr /)",
+      "Bash(rm -rf --no-preserve-root*)",
       "Bash(mkfs*)",
       "Bash(fdisk*)",
       "Bash(dd if=*)",
@@ -45,8 +19,38 @@
       "Bash(systemctl reboot)",
       "Bash(systemctl poweroff)",
       "Bash(git push --force*)",
-      "Bash(git push -f*)",
-      "Bash(chmod -R 777 /)"
+      "Bash(git push -f*)"
+    ],
+    "ask": [
+      "Bash(cvs run *)",
+      "Bash(cvs exec *)",
+      "Bash(pytest*tests*)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Bash(docker *)",
+      "Bash(sudo *)",
+      "Bash(pip uninstall*)",
+      "Bash(cvs monitor *)",
+      "Bash(cvs scp *)"
+    ],
+    "allow": [
+      "Bash(cvs list*)",
+      "Bash(cvs --version*)",
+      "Bash(cvs copy-config*)",
+      "Bash(cvs generate*)",
+      "Bash(pip install*)",
+      "Bash(pip list*)",
+      "Bash(pip index*)",
+      "Bash(pip show*)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(pwd)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(python3 *)",
+      "Bash(ruff *)",
+      "Bash(git *)"
     ]
   },
   "hooks": {
@@ -56,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/post-edit.sh \"$FILEPATH\""
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-edit.sh"
           }
         ]
       }
@@ -67,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/safety-guard.sh \"$INPUT\""
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/safety-guard.sh"
           }
         ]
       }
