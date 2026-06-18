@@ -1,4 +1,4 @@
-# CVS AI Agentic Automation
+# CVS AI Agentic Solution
 
 An AI-powered autonomous operator for AMD's [Cluster Validation Suite (CVS)](https://github.com/ROCm/cvs). Instead of memorizing CLI commands and manually checking results, just tell Claude what you want in plain English.
 
@@ -24,8 +24,8 @@ An AI-powered autonomous operator for AMD's [Cluster Validation Suite (CVS)](htt
 
 ```bash
 # 1. Clone this repo
-git clone https://github.com/mghaffa/cvs-ai-agentic-automation.git
-cd cvs-ai-agentic-automation
+git clone https://github.com/phoenix-amd/cvs-ai-agentic-solution.git
+cd cvs-ai-agentic-solution
 
 # 2. Install upstream CVS
 git clone https://github.com/ROCm/cvs.git

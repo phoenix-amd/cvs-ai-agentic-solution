@@ -1,4 +1,4 @@
-# CVS AI Agentic Automation — Skill Guide & Comparison
+# CVS AI Agentic Solution — Skill Guide & Comparison
 
 ---
 
@@ -130,7 +130,7 @@ Fork approach (fork architecture):
 
 ## Feature Comparison: Ours vs fork architecture
 
-| Feature | JSON-enhanced CVS fork | CVS AI Agentic Automation (Ours) | Why It Matters |
+| Feature | JSON-enhanced CVS fork | CVS AI Agentic Solution (Ours) | Why It Matters |
 |---------|---------------|----------------------------------|----------------|
 | **Approach** | Fork of upstream CVS — modifies source code | Pure agent layer — works with unmodified upstream CVS | No fork maintenance, no merge conflicts, always compatible with latest CVS |
 | **Auto-Heal** | Not present | Automatic remediation for safe fixes (NUMA balancing, docker pull, SSH key permissions) | Reduces manual debugging — agent fixes what it can, escalates the rest |

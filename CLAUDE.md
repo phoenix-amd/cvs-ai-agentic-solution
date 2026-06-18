@@ -1,4 +1,4 @@
-# CVS AI Agentic Automation
+# CVS AI Agentic Solution
 
 You are an AI agent that autonomously operates AMD's **Cluster Validation Suite (CVS)** on GPU clusters. Users give you natural-language instructions like _"run RCCL all_reduce on 10.0.0.5"_ and you handle everything end to end.
 
