@@ -182,14 +182,14 @@ Agent:  Wraps everything in tmux, runs all suites, auto-heals failures,
 │  Safety tiers: Allow (read-only) | Ask (test exec) | Deny (rm -rf) │
 └──────────────────────────────┬─────────────────────────────────────┘
                                │
-                  ┌────────────┼────────────┐
-                  ▼            ▼            ▼
-┌──────────────────┐ ┌──────────────┐ ┌─────────────────┐
-│  Upstream CVS    │ │  Jira (MCP)  │ │  Confluence     │
-│  (unmodified)    │ │  Escalation  │ │  Documentation  │
-│  pytest + pSSH   │ │  tickets     │ │  pages          │
-│  → GPU cluster   │ │  + logs      │ │                 │
-└──────────────────┘ └──────────────┘ └─────────────────┘
+            ┌──────────────────┼─────────────────┐
+            ▼                  ▼                 ▼
+  ┌──────────────────┐ ┌──────────────┐ ┌─────────────────┐
+  │  Upstream CVS    │ │  Jira (MCP)  │ │  Confluence     │
+  │  (unmodified)    │ │  Escalation  │ │  Documentation  │
+  │  pytest + pSSH   │ │  tickets     │ │  pages          │
+  │  → GPU cluster   │ │  + logs      │ │                 │
+  └──────────────────┘ └──────────────┘ └─────────────────┘
 ```
 
 ## Test Coverage (34 Suites)
