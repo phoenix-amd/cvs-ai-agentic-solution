@@ -295,6 +295,25 @@ On any failure, the agent auto-collects from affected nodes:
 `rocm-smi`, `ibstat`, `dmesg`, `ethtool`, `rdma link` — bundled into
 a diagnostic summary.
 
+### Persistent Result Storage
+Every test result is saved to a **timestamped folder** on your local drive
+— never lost on reboot. Auto-detects your OS:
+
+| Platform | Save Location |
+|----------|-------------|
+| **WSL** | `C:\Users\<you>\Downloads\cvs_results\` (Windows Explorer) |
+| **Linux** | `~/Downloads/cvs_results/` |
+| **Custom** | Set `CVS_RESULTS_DIR` env var |
+
+```
+Downloads/cvs_results/
+├── 2026-06-18_173025_preflight_checks/
+├── 2026-06-18_180730_rccl_perf_all_reduce/
+└── 2026-06-19_091500_host_configs_cvs/
+```
+
+Multiple runs per day each get their own folder — nothing is overwritten.
+
 ### HTTP Report Delivery
 After every test, serves HTML reports via local HTTP server with a
 browser-ready link. Works from WSL, remote terminals, and headless
@@ -366,6 +385,7 @@ flagged.
 | Pre-built workflows | No | No | 6 pipelines |
 | Canary-first | Manual | No | Built-in |
 | Diagnostics on failure | Manual | No | Auto-collected |
+| Persistent results | No | No | Timestamped folders, OS-aware |
 | Team onboarding | Read docs | Read docs | First-run wizard |
 | Prompt-injection defense | N/A | No | Built-in |
 | Maintenance | N/A | Ongoing fork sync | Near-zero |
