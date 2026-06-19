@@ -638,18 +638,26 @@ ssh <headnode> 'tmux attach -t cvs_test'
 ssh <headnode> 'grep -q EXIT_CODE ~/test_output.log && echo "DONE" || echo "RUNNING"'
 ```
 
-### When to Use tmux Wrapping
+### When to Use tmux Wrapping (AUTOMATIC — User Does NOT Need to Ask)
 
-| Test Type | Expected Duration | Use tmux? |
-|-----------|------------------|-----------|
-| Preflight | < 2 minutes | No |
-| host_configs | < 2 minutes | No |
-| RCCL single collective | 1-5 minutes | No |
-| RCCL full sweep | 10-30 minutes | **Yes** |
-| AGFHC level 1 | 15-30 minutes | **Yes** |
-| AGFHC level 3 | 2-8 hours | **Yes** |
-| Training benchmarks | 30 min - hours | **Yes** |
-| Full cluster qualification | 1-4 hours | **Yes** |
+The agent **automatically decides** whether to wrap a test in tmux based on
+expected duration. The user never needs to say "use tmux" — the agent does it.
+
+| Test Type | Expected Duration | tmux? | Agent Behavior |
+|-----------|------------------|-------|----------------|
+| Preflight | < 2 minutes | No | Run directly via SSH |
+| host_configs | < 2 minutes | No | Run directly via SSH |
+| RCCL single collective | 1-5 minutes | No | Run directly via SSH |
+| RCCL full sweep | 10-30 minutes | **Auto** | Wrap in tmux, inform user |
+| AGFHC level 1 | 15-30 minutes | **Auto** | Wrap in tmux, inform user |
+| AGFHC level 3 | 2-8 hours | **Auto** | Wrap in tmux, inform user |
+| Training benchmarks | 30 min - hours | **Auto** | Wrap in tmux, inform user |
+| Full cluster qualification | 1-4 hours | **Auto** | Wrap in tmux, inform user |
+| User says "overnight" | Hours | **Always** | Wrap in tmux + watchdog script |
+
+**Rule**: If estimated runtime > 5 minutes → wrap in tmux automatically.
+Tell the user: "This test will take ~X minutes. Wrapping in tmux so it
+survives if your connection drops. You can safely disconnect."
 
 ### Reconnect After Disconnect
 
