@@ -2,6 +2,38 @@
 
 All notable changes to the CVS AI Agentic Solution are documented here.
 
+## [1.3.0] - 2026-06-18
+
+### Magic Prompt, Auto-Install, JSON Fork Compatibility
+
+### New Features
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 1 | **Magic Prompt** | Single entry-point prompt for new users — handles profile creation, CVS install, SSH setup, sanity check, and first health check in one shot |
+| 2 | **Auto-Install CVS** | If CVS is missing on head node, agent automatically installs via `pip install cvs` or from source — no manual step needed |
+| 3 | **JSON Fork Detection** | Detects if a JSON-enhanced CVS fork is installed; automatically uses `cvs run-json`, `cvs list-json`, `cvs compare` when available |
+| 4 | **Executive README** | Added impact metrics table, problem/solution framing, updated architecture diagram showing Jira/Confluence integration |
+| 5 | **New User Guide** | Step-by-step setup guide (6 steps from clone to first result) for sharing with teams |
+
+### Relationship with JSON-Enhanced CVS Forks
+
+This skill is **complementary** to JSON-enhanced CVS forks:
+- JSON forks add machine-readable CLI to CVS (better parsing)
+- This skill adds autonomous operational workflows (better brain)
+- When used together: JSON output → reliable agent parsing + overnight mode + Jira escalation
+
+### Skill Updates
+
+- **SKILL.md**: Added "Magic Prompt" section — 10-step automated onboarding sequence
+- **SKILL.md**: Added auto-install logic for CVS missing on head node
+- **SKILL.md**: Added JSON fork detection and JSON command preference table
+- **README.md**: Executive summary with impact metrics at the top
+- **README.md**: Magic prompt example in Quick Start
+- **README.md**: Updated architecture diagram with Jira/Confluence
+
+---
+
 ## [1.2.0] - 2026-06-18
 
 ### Overnight Autonomous Mode, Jira Escalation, Connection Resilience

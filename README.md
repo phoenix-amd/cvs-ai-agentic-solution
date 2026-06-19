@@ -52,106 +52,117 @@ Agent:  1. Generates cluster.json with those 4 IPs
         5. Reports: "All nodes passed. Avg bus bandwidth: 348 GB/s (target: 330)"
 ```
 
-## Quick Start (New User Guide)
+## Quick Start — 3 Steps, 10 Minutes
 
-Follow these steps to get up and running. Total setup time: ~10 minutes.
+**You do NOT need to install CVS, edit configs, or set up anything manually.**
+Clone, launch Claude, paste one prompt — the agent does the rest.
 
-### Step 1: Prerequisites
+### Prerequisites
 
-Before you begin, make sure you have:
+| Requirement | How to Check | Install Guide |
+|-------------|-------------|---------------|
+| **Claude Code** | `claude --version` | [claude.ai/claude-code](https://claude.ai/claude-code) |
+| **SSH key access** to your GPU cluster | `ssh <headnode> hostname` | Your cluster admin |
+| **Python 3.9+** on the head node | `ssh <headnode> 'python3 --version'` | Pre-installed on most clusters |
+| **(Optional) Atlassian MCP** for Jira | Already configured if you use Jira with Claude | [setup guide](https://github.com/sooperset/mcp-atlassian) |
 
-- **Claude Code** installed ([install guide](https://claude.ai/claude-code))
-  ```bash
-  # Verify Claude Code is installed
-  claude --version
-  ```
-- **Python 3.9+** with pip
-- **SSH key-based access** to your GPU cluster (passwordless)
-- **AMD Instinct GPUs** (MI300X, MI325X, MI350, MI355X)
-- **(Optional) Atlassian MCP** for Jira escalation — [setup guide](https://github.com/sooperset/mcp-atlassian)
+> You do NOT need to install CVS on the head node yourself — the agent does it automatically.
 
-### Step 2: Clone and Enter the Project
+---
+
+### Step 1: Clone
 
 ```bash
-# Clone from GitHub
 git clone https://github.com/phoenix-amd/cvs-ai-agentic-solution.git
-
-# Enter the project directory
 cd cvs-ai-agentic-solution
 ```
 
-### Step 3: Install CVS on Your Head Node
-
-CVS runs on the **head node** (the machine with SSH access to all cluster nodes),
-not on your laptop. SSH into your head node and install:
+### Step 2: Launch Claude
 
 ```bash
-# On the head node:
-pip install cvs
-# OR: install from source
-git clone https://github.com/ROCm/cvs.git && cd cvs
-python3 -m venv .cvs_venv && source .cvs_venv/bin/activate
-pip3 install -r requirements.txt
-
-# Verify
-cvs --version && cvs list
-```
-
-### Step 4: Launch Claude Code
-
-From your laptop/workstation (WSL, macOS, or Linux), launch Claude Code
-inside the project directory:
-
-```bash
-cd cvs-ai-agentic-solution
 claude
 ```
 
-Claude Code automatically loads the CVS skills from `.claude/skills/`.
+Claude Code automatically loads the CVS skills. You'll see the Claude prompt.
 
-### Step 5: First-Run Onboarding
+### Step 3: Paste the Magic Prompt
 
-On your **first run**, the agent will ask you for:
-
-| Question | Example | Purpose |
-|----------|---------|---------|
-| Head node IP | `10.194.129.213` | Where to run CVS commands |
-| Worker node IPs | `10.194.129.211,10.194.129.212` | Nodes to test |
-| SSH username | `rghaffar` | Your login on the cluster |
-| SSH key path | `~/.ssh/id_ed25519` | Key for passwordless SSH |
-| Jira project key | `DCCS` | Where to create escalation tickets |
-
-The agent then runs a **sanity check** to verify everything works:
-SSH connectivity, CVS install, Jira access, network interfaces, RDMA hardware.
-
-### Step 6: Start Talking
+Copy this template, fill in your cluster details, and paste it into Claude:
 
 ```
-You:    "Check if the cluster is healthy"
-Agent:  Runs preflight + platform checks, reports pass/fail per node
-
-You:    "Run RCCL all_reduce on all nodes"
-Agent:  Discovers interfaces, validates env script, runs RCCL, reports bandwidth
-
-You:    "Run full cluster qualification overnight"
-Agent:  Wraps everything in tmux, runs all suites, auto-heals failures,
-        creates Jira tickets for hardware issues — results ready in the morning
+Set up CVS on head node <HEAD_IP> with worker nodes <WORKER_IP1,WORKER_IP2>.
+SSH user is <YOUR_USERNAME>, key is ~/.ssh/id_ed25519.
+Jira project is <JIRA_PROJECT_KEY>.
+Check everything is installed and ready, then run a quick health check.
 ```
 
-### Use
+**Real example:**
+```
+Set up CVS on head node 10.194.129.213 with worker node 10.194.129.211.
+SSH user is rghaffar, key is ~/.ssh/id_ed25519.
+Jira project is DCCS.
+Check everything is installed and ready, then run a quick health check.
+```
 
-| What you say | What happens |
-|-------------|-------------|
-| "Check if nodes 10.0.0.1-4 are healthy" | Preflight + platform checks on all 4 nodes |
-| "Run RCCL all_reduce on the cluster" | Config generation → preflight → rccl_perf -k all_reduce |
-| "Full cluster qualification" | Preflight → platform → AGFHC → RCCL (sequential pipeline) |
+### What Happens Next (All Automatic)
+
+After you paste the magic prompt, the agent runs through this checklist
+automatically — you just watch:
+
+```
+ #   What the Agent Does                                You Do
+ ──   ─────────────────────────────────────────────      ──────────
+  1   Saves your cluster profile locally                 Nothing
+  2   SSHes to head node, checks if CVS is installed     Nothing
+  3   CVS missing? Installs it (pip install cvs)         Nothing
+  4   Sets up SSH keys (head→self, head→workers)         Nothing
+  5   Discovers network interfaces (eno8303, etc.)       Nothing
+  6   Discovers RDMA hardware (mlx5, bnxt_re, etc.)      Nothing
+  7   Checks Jira MCP connection                         Nothing*
+  8   Runs 9-point sanity check                          Nothing
+  9   Runs preflight + platform health check             Nothing
+ 10   Serves HTML report at http://localhost:8888         Open browser
+
+ * If Jira MCP is not configured, the agent tells you how to set it up.
+   All CVS tests still work — only Jira escalation is skipped.
+```
+
+### After Setup: Just Talk
+
+Once setup is complete, you never need the magic prompt again.
+Just describe what you want in plain English:
+
+| What You Say | What the Agent Does |
+|-------------|---------------------|
+| "Check if the cluster is healthy" | Preflight + platform checks, per-node pass/fail report |
+| "Run RCCL all_reduce on all nodes" | Auto-config → preflight → rccl_perf, bandwidth table |
+| "Run full cluster qualification overnight" | Wraps in tmux → runs all suites → auto-heals → Jira for HW issues → results in the morning |
 | "GPU burn-in on node 10.0.0.5" | AGFHC stress test (HBM, DMA, GFX, PCIe, XGMI) |
-| "Test inference readiness with vLLM" | Preflight → platform → vLLM smoke test |
-| "Is the cluster ready for distributed training?" | Preflight → platform → RCCL → single-node training canary |
+| "Is the cluster ready for training?" | Preflight → platform → RCCL → training canary |
 | "Run memory bandwidth test" | TransferBench (all-to-all, P2P, healthcheck) |
+| "Test inference readiness with vLLM" | Preflight → platform → vLLM smoke test |
+| "Check RDMA connectivity across all nodes" | Preflight with full_mesh mode |
 | "Check RDMA connectivity across all nodes" | Preflight with full_mesh mode |
 
-## Architecture
+## Architecture: Pure Agent Layer (No Fork)
+
+This solution is a **pure agent layer**. It uses **unmodified upstream CVS**
+(`pip install cvs`) and adds AI-powered operational intelligence on top.
+No fork, no source code changes, no merge conflicts — ever.
+
+### Why Pure Agent Layer, Not a Fork?
+
+| Aspect | Fork Approach | Pure Agent Layer (This Project) |
+|--------|--------------|--------------------------------|
+| **How it works** | Forks CVS repo, modifies source code, adds custom plugins | Installs CVS as-is, adds `.claude/` config files on top |
+| **When CVS updates** | Must rebase/merge; custom plugins may conflict | `pip install --upgrade cvs` — done |
+| **New test suites** | Must update custom plugins to expose them | Agent runs `cvs list` — new suites appear automatically |
+| **CLI flag changes** | Custom plugins may break | Uses upstream CLI directly |
+| **Maintenance burden** | Ongoing: rebase, fix conflicts, update forked code | Near-zero: only update SKILL.md if workflows change |
+| **Code to maintain** | ~625 files (full CVS fork + plugins) | ~11 files (all markdown/JSON/shell) |
+| **Analogy** | Built a custom engine inside the car | Built a smart driver that can drive any car |
+
+### How It Works
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
@@ -207,9 +218,15 @@ Agent:  Wraps everything in tmux, runs all suites, auto-heals failures,
 
 ## Key Features
 
-### Pure Agent Layer (No Fork)
-Works with upstream CVS as-is. When CVS releases a new version, just
-`pip install --upgrade cvs` — no fork to rebase, no merge conflicts.
+### Pure Agent Layer (No Fork Required)
+Works with **upstream unmodified CVS** (`pip install cvs`). The agent
+installs CVS on the head node automatically — you never touch CVS directly.
+When AMD releases a new CVS version, just `pip install --upgrade cvs` — no
+fork to rebase, no merge conflicts, always compatible.
+
+> **Note**: If a JSON-enhanced CVS fork (with `--format json` support) is
+> installed, the skill auto-detects it and uses JSON commands for more reliable
+> parsing. But it is **not required** — upstream CVS works perfectly.
 
 ### First-Run Onboarding
 On first use, the agent collects SSH credentials, head/worker node IPs,
@@ -308,7 +325,7 @@ flagged.
 ├── README.md                              # This file — overview, quick start, value prop
 ├── FEATURES.md                            # Detailed feature docs with flow diagrams
 ├── CHANGELOG.md                           # Version history: fixes, features, verifications
-├── ONENOTE_EXPORT.md                      # Formatted export for documentation
+├── ARCHITECTURE.md                        # Architecture decisions, pure agent vs fork, skill guide
 ├── .gitignore                             # Ignores .cvs_agent/, *.html, cluster.json
 └── .claude/
     ├── NOTES.md                           # Working notes & TODOs

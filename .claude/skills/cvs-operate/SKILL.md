@@ -120,20 +120,81 @@ Support multiple profiles: `~/.cvs_agent/cluster_profile_<name>.json`
 
 ---
 
+## Magic Prompt — Single Entry Point for New Users
+
+When a new user doesn't know where to start, they should paste one prompt
+and the agent handles everything: profile creation, CVS installation, SSH
+setup, sanity check, and first health check.
+
+**Template:**
+```
+Set up CVS on head node <IP> with worker nodes <IP1,IP2,...>.
+SSH user is <username>, key is <key_path>.
+Jira project is <PROJECT_KEY>. Check everything is installed and ready,
+then run a quick health check.
+```
+
+**What happens when this prompt is received (in order):**
+
+```
+1. Save cluster profile → ~/.cvs_agent/cluster_profile.json
+2. SSH to head node → check CVS installed
+   MISSING → ssh headnode 'pip install cvs' (or from source)
+   FOUND   → check version, note if newer available
+3. Check head node SSH to itself
+   MISSING → ssh headnode 'cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys'
+4. Check head → worker SSH connectivity
+   MISSING → generate key pair on head, push public key to workers
+5. Discover mgmt interface → ip route get 1
+6. Discover RDMA hardware → ibdev2netdev
+7. Run 9-point sanity check (SSH, CVS, Jira, Confluence, interfaces)
+8. Run preflight_checks → first real validation
+9. Serve HTML report → http://localhost:8888/preflight.html
+10. Report: "Cluster is ready / not ready, here's what was found"
+```
+
+This is the **only prompt a new user needs**. Everything else flows from it.
+
+---
+
 ## Guided Operation — First-Contact Flow (START HERE)
 
 Walk this flow top to bottom on every new cluster engagement. Skip steps you
 can already answer from context.
 
-### Step 0: Version & Environment Check
+### Step 0: CVS Installation & Version Check
 
 ```bash
-cvs --version                    # Is CVS installed?
-pip index versions cvs 2>/dev/null  # Is there a newer version?
+# Check if CVS is installed on the HEAD NODE (not locally)
+ssh <headnode> 'which cvs && cvs --version' 2>&1
 ```
 
-If not installed → offer to install. If newer version → inform user, ask before
-upgrading. Never auto-upgrade.
+| Result | Action |
+|--------|--------|
+| `cvs: 1.x.x` found | Continue — note version, check if newer available |
+| `command not found` | **Auto-install** (no need to ask — it's always safe) |
+| Permission denied | Fix SSH first (Step 2), then retry |
+
+**Auto-install CVS if missing:**
+```bash
+# Option 1: pip install (preferred — matches production)
+ssh <headnode> 'pip3 install cvs 2>&1 || pip install cvs 2>&1'
+
+# Option 2: from source (if pip fails)
+ssh <headnode> 'git clone https://github.com/ROCm/cvs.git /tmp/cvs_install && \
+    cd /tmp/cvs_install && \
+    python3 -m venv .cvs_venv && source .cvs_venv/bin/activate && \
+    pip3 install -r requirements.txt && \
+    echo "CVS installed from source"'
+
+# Verify
+ssh <headnode> 'cvs --version'
+```
+
+**Check for newer CVS version** (inform user, never auto-upgrade):
+```bash
+ssh <headnode> 'pip index versions cvs 2>/dev/null | head -3'
+```
 
 ### Step 1: Establish the Target
 
@@ -292,6 +353,25 @@ cfg["rccl"]["mpi_params"]["mpi_oob_port"] = "<discovered_interface>"
 
 **Also note**: CVS appends `/bin/mpirun` to `mpi_dir`, so if `mpirun` is at
 `/usr/bin/mpirun`, set `mpi_dir` to `/usr` (not `/usr/bin`).
+
+### Optional: JSON-Enhanced CVS Fork
+
+If the head node has a JSON-enhanced CVS fork installed (with `--format json`
+support), prefer JSON commands over standard CVS commands — they are more
+reliable for agent parsing:
+
+| Standard CVS | JSON Fork Version | Why prefer JSON |
+|-------------|------------------------|-----------------|
+| `cvs list` | `cvs list-json` | No text parsing needed |
+| `cvs run <suite>` | `cvs run-json <suite> --format json` | Structured results |
+| `cvs exec --cmd` | `cvs exec-json --cmd --format json` | Per-node JSON output |
+| `cvs preflight` | `cvs preflight --format json` | Exit code 0/1/2 |
+| (none) | `cvs describe --format json` | Discover full CLI surface |
+| (none) | `cvs compare peers *.json` | Automated result comparison |
+| (none) | `cvs baseline capture/compare` | Baseline tracking |
+
+Check which version is installed: `cvs describe --format json 2>/dev/null`
+— if it returns JSON, the JSON fork is active. Use JSON commands throughout.
 
 ### 2. Validate the RCCL env script
 
