@@ -61,7 +61,8 @@ cat > ~/.cvs_agent/cluster_profile.json << 'EOF'
   "jira_project": "DCGPU",
   "jira_component": "GPU-Health",
   "mgmt_interface": null,
-  "nic_type": null
+  "nic_type": null,
+  "results_dir": null
 }
 EOF
 ```
@@ -310,10 +311,25 @@ the user can review past results anytime. Never store results only in `/tmp`
 — they get deleted on reboot.
 
 ```bash
-# Create results directory with date AND time stamp
-# Format: ~/Downloads/cvs_results/YYYY-MM-DD_HHMMSS_<suite_name>/
+# Auto-detect platform and set results path
+if [ -d "/mnt/c/Users" ]; then
+    # WSL — save to Windows Downloads (visible in Windows Explorer)
+    WIN_USER=$(cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r')
+    CVS_RESULTS_BASE="/mnt/c/Users/${WIN_USER}/Downloads/cvs_results"
+elif [[ "$(uname -s)" == "Linux" ]]; then
+    # Native Linux / Ubuntu
+    CVS_RESULTS_BASE="$HOME/Downloads/cvs_results"
+else
+    # macOS or other
+    CVS_RESULTS_BASE="$HOME/Downloads/cvs_results"
+fi
+
+# User can override by setting CVS_RESULTS_DIR environment variable
+CVS_RESULTS_BASE="${CVS_RESULTS_DIR:-$CVS_RESULTS_BASE}"
+
+# Create timestamped folder for this run
 TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
-RESULTS_DIR="$HOME/Downloads/cvs_results/${TIMESTAMP}_<suite_name>"
+RESULTS_DIR="${CVS_RESULTS_BASE}/${TIMESTAMP}_<suite_name>"
 mkdir -p "$RESULTS_DIR"
 
 # After every test, copy from head node to local results folder
