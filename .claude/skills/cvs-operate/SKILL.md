@@ -71,6 +71,48 @@ EOF
 - **Never store passwords, tokens, or secrets** in this file
 - The `~/.cvs_agent/` directory is in `.gitignore` — it stays local
 
+### Atlassian MCP Setup (for users without it)
+
+If the Atlassian MCP server is not connected, the agent should guide the user:
+
+1. Install the Atlassian MCP server for Claude Code
+2. Configure with their Atlassian credentials (API token from
+   https://id.atlassian.com/manage/api-tokens)
+3. Verify by running a Jira search
+
+If Atlassian MCP is not available, the agent can still run all CVS tests —
+Jira escalation will just be skipped with a warning.
+
+### Verified Jira Configuration (DCCS Project)
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| Project key | `DCCS` | DPEG Fleet Services |
+| Issue type | `Issue` | Not "Bug" — DCCS uses "Issue" type |
+| Component | `Cluster Administration` | For hardware escalation tickets |
+| Labels | `cvs-automated` | Always add this label for tracking |
+
+### Sanity Check (Run Immediately After Setup)
+
+After collecting user info, run this checklist to verify everything works
+**before** any real tests. This catches permission issues early.
+
+```
+Sanity Check Routine:
+  1. SSH to head node            → ssh <head> 'hostname && cvs --version'
+  2. SSH head→self               → ssh <head> 'ssh <head_ip> hostname'
+  3. SSH head→worker(s)          → ssh <head> 'ssh <worker_ip> hostname'
+  4. CVS installed               → ssh <head> 'cvs list | head -5'
+  5. Jira search                 → jira_search("project = DCCS", limit=1)
+  6. Jira create test ticket     → Create + delete a test issue
+  7. Confluence search           → confluence_search("CVS", limit=1)
+  8. Network interface discovery → ssh <head> 'ip route get 1'
+  9. RDMA hardware check         → ssh <head> 'ibdev2netdev'
+```
+
+Present results as a pass/fail table. If any check fails, fix it before
+proceeding to real tests.
+
 ### Re-running Setup
 
 If a user switches clusters, ask for new details and create a new profile.

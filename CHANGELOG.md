@@ -18,13 +18,34 @@ Major feature release adding enterprise-grade capabilities for team use.
 | 4 | **First-Run Onboarding** | Collects SSH credentials, node IPs, Jira project keys on first use; stores in local profile (`~/.cvs_agent/`); supports multiple cluster profiles |
 | 5 | **"Why Use This" Section** | Added clear value proposition table comparing with/without the tool |
 
+### Verified Integration
+
+Jira integration tested end-to-end on `amd.atlassian.net`:
+- **Project**: DCCS (DPEG Fleet Services)
+- **Issue type**: "Issue" (verified — DCCS does not use "Bug")
+- **Component**: "Cluster Administration" (auto-assigned)
+- **Labels**: `cvs-automated`, `sanity-check` (applied correctly)
+- **Test ticket**: DCCS-6484 created successfully with full markdown description
+
+### New: 9-Point Sanity Check
+
+Runs immediately after first-run onboarding to verify all permissions:
+SSH (head, self, workers), CVS install, Jira create/search, Confluence,
+network interface discovery, RDMA hardware check. Catches issues before
+any real test runs.
+
 ### Skill Updates
 
 - **SKILL.md**: Added "First-Run Setup" section with credential collection flow
+- **SKILL.md**: Added "Sanity Check" routine (9-point verification)
+- **SKILL.md**: Added verified Jira configuration (DCCS project, Issue type, labels)
+- **SKILL.md**: Added Atlassian MCP setup guide for new users
 - **SKILL.md**: Added "Connection Resilience" section with tmux wrapping guide
 - **SKILL.md**: Added "Overnight Autonomous Mode" section with watchdog script
 - **SKILL.md**: Added "Jira Escalation for Hardware Failures" section with trigger table
 - **SKILL.md**: Added 4 new Don't rules (#11-14)
+- **FEATURES.md**: Created comprehensive feature docs with flow diagrams
+- **FEATURES.md**: Added sanity check details and MCP setup guide
 - **README.md**: Added "Why Use This" value proposition table
 - **README.md**: Updated comparison table with 4 new rows
 - **README.md**: Added feature descriptions for overnight mode, Jira, connection resilience
