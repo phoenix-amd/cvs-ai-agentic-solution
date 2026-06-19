@@ -1,7 +1,19 @@
 # Feature Guide — CVS AI Agentic Solution
 
-Detailed documentation of every feature: **why** it exists, the **value** it
-provides, and **how** it works under the hood.
+Comprehensive technical documentation of every capability in the CVS AI
+Agentic Solution. Each feature is documented with a consistent structure:
+
+- **Why This Exists** — the problem it solves
+- **Value** — measurable impact on engineering time and reliability
+- **Who Decides** — whether the agent acts autonomously or waits for user input
+- **How It Works** — technical mechanism with flow diagrams
+- **Scenario** — real-world example showing the feature in action
+
+This document is designed for **technical presentations, architecture reviews,
+and executive briefings**. Every feature has been field-tested on production
+AMD Instinct MI300X GPU clusters.
+
+**15 features | 34 test suites | Pure agent layer | Zero fork maintenance**
 
 ---
 
@@ -9,15 +21,19 @@ provides, and **how** it works under the hood.
 
 1. [Overnight Autonomous Mode](#1-overnight-autonomous-mode)
 2. [Jira Escalation for Hardware Failures](#2-jira-escalation-for-hardware-failures)
-3. [Connection Resilience](#3-connection-resilience-tmux-wrapping)
+3. [Connection Resilience (tmux)](#3-connection-resilience-tmux-wrapping)
 4. [First-Run Onboarding](#4-first-run-onboarding)
 5. [RCCL Pre-Run Validation](#5-rccl-pre-run-validation)
 6. [Auto-Heal Playbook](#6-auto-heal-playbook)
 7. [Smart Single-Node Handling](#7-smart-single-node-handling)
-8. [HTTP Report Delivery](#8-http-report-delivery)
+8. [HTTP Report Delivery & Persistent Storage](#8-http-report-delivery--persistent-result-storage)
 9. [Pre-Built Workflows](#9-pre-built-workflows)
 10. [Canary-First Pattern](#10-canary-first-pattern)
 11. [Prompt-Injection Defense](#11-prompt-injection-defense)
+12. [Persistent Result Storage (OS-Aware)](#12-persistent-result-storage-os-aware)
+13. [Auto-Install CVS](#13-auto-install-cvs)
+14. [Magic Prompt (Single Entry Point)](#14-magic-prompt-single-entry-point)
+15. [9-Point Sanity Check](#15-9-point-sanity-check)
 
 ---
 
@@ -364,14 +380,42 @@ The key insight: **tmux runs on the head node**, not on your laptop. When your
 SSH connection drops, tmux keeps the CVS process alive because it's a separate
 process on the server.
 
-### When tmux Is Used Automatically
+### Who Decides: Agent (Automatic)
 
-| Test Duration | tmux? | Reason |
-|--------------|-------|--------|
-| < 5 minutes | No | Quick enough, reconnect is easy |
-| 5-30 minutes | **Yes** | Risk of disconnect is real |
-| 30+ minutes | **Always** | Cannot afford to lose progress |
-| Overnight mode | **Always** | Entire point is unattended execution |
+The **user never needs to ask for tmux**. The agent automatically decides
+based on estimated test duration. If runtime > 5 minutes → tmux wrapping.
+
+| Test | Duration | tmux? | Agent Behavior |
+|------|----------|-------|----------------|
+| preflight | < 2 min | No | Run directly via SSH |
+| host_configs | < 2 min | No | Run directly via SSH |
+| RCCL single collective | 1-5 min | No | Run directly via SSH |
+| RCCL full sweep | 10-30 min | **Auto** | Wraps in tmux, tells user: "Safe to disconnect" |
+| AGFHC level 1 | 15-30 min | **Auto** | Wraps in tmux, tells user: "Safe to disconnect" |
+| AGFHC level 3 | 2-8 hours | **Auto** | Wraps in tmux, tells user: "Safe to disconnect" |
+| Training benchmarks | 30+ min | **Auto** | Wraps in tmux, tells user: "Safe to disconnect" |
+| Full qualification | 1-4 hours | **Auto** | Wraps in tmux, tells user: "Safe to disconnect" |
+| User says "overnight" | Hours | **Always** | Wraps in tmux + watchdog script |
+
+### Scenario: What Happens When You Disconnect
+
+```
+11:00 PM  You: "Run AGFHC level 3 on all nodes"
+          Agent: "This will take ~4 hours. Wrapping in tmux so it
+                  survives if your connection drops. Safe to disconnect."
+          Agent: launches test in tmux session 'cvs_agfhc'
+
+11:30 PM  Your laptop sleeps / VPN drops / WiFi disconnects
+          → Test keeps running on head node inside tmux
+
+ 7:00 AM  You reconnect, open Claude
+          You: "What happened with the AGFHC test?"
+          Agent: reads tmux output, downloads results
+          Agent: "AGFHC completed at 3:14 AM. 15/16 GPUs passed.
+                  GPU 3 on node .211 had HBM errors — Jira DCCS-6490
+                  created with diagnostics. Report ready at
+                  http://localhost:8888/agfhc_report.html"
+```
 
 ---
 
@@ -699,6 +743,18 @@ on one node first catches config errors immediately.
 - **Resource efficient**: Don't burn GPU-hours on bad configs
 - **Faster iteration**: Fix config on 1 node, then scale to fleet
 
+### Who Decides: Agent (Automatic for Multi-Node)
+
+For clusters with 2+ nodes, the agent automatically creates a canary
+cluster file and tests one node first. User doesn't need to ask.
+
+| Cluster Size | Canary? | Agent Behavior |
+|-------------|---------|----------------|
+| 1 node | No | Only one node — run directly |
+| 2 nodes | **Auto** | Test node 1 first, then both |
+| 4+ nodes | **Auto** | Test node 1 first, then full cluster |
+| 64+ nodes | **Auto** | Test node 1 first, then full fleet |
+
 ### How It Works
 
 ```
@@ -706,6 +762,20 @@ on one node first catches config errors immediately.
     2. Run test on canary node
     3. PASS → Run on full cluster
     4. FAIL → Fix issue, retry canary (not full cluster)
+```
+
+### Scenario
+
+```
+You: "Run RCCL on all 8 nodes"
+Agent: "Running canary test on node 10.0.0.1 first..."
+       (2 minutes later)
+Agent: "Canary passed. Now running on all 8 nodes."
+       vs.
+Agent: "Canary FAILED — wrong mpi_oob_port. Fixing config..."
+       "Fixed. Re-running canary..."
+       "Canary passed. Now running on all 8 nodes."
+       → Saved 8x the GPU-time by catching the error on 1 node
 ```
 
 ---
@@ -735,18 +805,173 @@ flags it to the user and ignores it.
 
 ---
 
+## 12. Persistent Result Storage (OS-Aware)
+
+### Why This Exists
+
+Test results stored in `/tmp` are lost on every reboot. Engineers frequently
+need to revisit previous validation runs to compare performance over time,
+provide evidence for audits, or investigate regressions that surface days
+after the original test.
+
+### Value
+
+- **Audit compliance**: Complete history of every validation run with timestamps
+- **Regression detection**: Compare today's RCCL bandwidth against last week's baseline
+- **Cross-platform transparency**: Results appear in Windows Explorer on WSL, or in native file manager on Linux
+- **Zero configuration**: Auto-detects the operating system and selects the appropriate storage path
+
+### Who Decides: Agent (Automatic — Every Test)
+
+The agent **always** saves results after every test run. The user never
+needs to ask. Storage location is auto-detected based on OS.
+
+| Platform | Storage Path | How User Accesses |
+|----------|-------------|-------------------|
+| **WSL** | `C:\Users\<you>\Downloads\cvs_results\` | Windows Explorer |
+| **Native Linux** | `~/Downloads/cvs_results/` | File manager or terminal |
+| **Custom** | `$CVS_RESULTS_DIR` | User-defined via environment variable |
+
+### How It Works
+
+```
+    After EVERY test:
+    1. Agent detects OS (WSL? Linux? macOS?)
+    2. Creates timestamped folder: YYYY-MM-DD_HHMMSS_<suite_name>/
+    3. scp report.html + test.log from head node → local results folder
+    4. Copies report.html to /tmp/ for HTTP serving
+    5. Tells user: "Results saved to <path>. Report: http://localhost:8888/..."
+```
+
+### Scenario
+
+```
+Day 1:  Run RCCL all_reduce → saved to 2026-06-18_180730_rccl_perf/
+Day 2:  Run RCCL all_reduce → saved to 2026-06-19_091500_rccl_perf/
+Day 3:  "Why is bandwidth lower today?"
+        → Open both report.html files side by side in browser
+        → Compare bandwidth tables directly
+```
+
+---
+
+## 13. Auto-Install CVS
+
+### Why This Exists
+
+CVS must be installed on the head node for any test to run. Requiring users
+to SSH into the head node and manually run `pip install cvs` is an unnecessary
+friction point that delays time-to-first-result.
+
+### Value
+
+- **Zero manual installation**: User provides the head node IP — agent handles the rest
+- **Reduced onboarding time**: New engineers productive in minutes, not hours
+- **Version awareness**: Agent checks for newer CVS versions and informs the user
+
+### Who Decides: Agent (Automatic)
+
+The agent checks on every first contact. If CVS is missing, it installs
+automatically without asking (installation is always safe).
+
+| Situation | Agent Action |
+|-----------|-------------|
+| CVS installed, up to date | Continue — note version |
+| CVS installed, newer available | Inform user: "v1.3 available, want to upgrade?" |
+| CVS **not installed** | Auto-install via `pip install cvs` |
+| pip fails | Fallback: clone from source, install in virtualenv |
+
+---
+
+## 14. Magic Prompt (Single Entry Point)
+
+### Why This Exists
+
+New users face a cold-start problem: they don't know what prompt to type,
+what information is needed, or what order things should happen. Without a
+clear entry point, onboarding becomes a back-and-forth conversation.
+
+### Value
+
+- **Single prompt to production**: One paste replaces 10+ manual steps
+- **Self-documenting**: The prompt template shows exactly what's needed
+- **Repeatable**: Same prompt works for any cluster, any user, any team
+
+### Who Decides: User Initiates, Agent Executes
+
+The user pastes the magic prompt once. The agent then executes a 10-step
+automated sequence without further input.
+
+### The 10-Step Sequence
+
+| Step | What Agent Does | Duration |
+|------|----------------|----------|
+| 1 | Save cluster profile locally | < 1 sec |
+| 2 | SSH to head node, check CVS | 5 sec |
+| 3 | Install CVS if missing | 30-60 sec |
+| 4 | Set up SSH keys (head→self, head→workers) | 10 sec |
+| 5 | Discover network interfaces | 5 sec |
+| 6 | Discover RDMA hardware type | 5 sec |
+| 7 | Verify Jira MCP connection | 5 sec |
+| 8 | Run 9-point sanity check | 30 sec |
+| 9 | Run preflight + platform health check | 2-3 min |
+| 10 | Serve HTML report, present results | 5 sec |
+
+**Total: ~5 minutes from paste to first result.**
+
+---
+
+## 15. 9-Point Sanity Check
+
+### Why This Exists
+
+Discovering that Jira permissions are wrong or SSH keys are broken at 2 AM
+during an overnight run wastes the entire night. Every integration point
+should be verified **upfront**, before any real test begins.
+
+### Value
+
+- **Fail fast on permissions**: Catches SSH, Jira, CVS issues in 30 seconds
+- **Prevents overnight surprises**: All integration points verified before long runs
+- **Clear pass/fail table**: User sees exactly what works and what needs fixing
+
+### Who Decides: Agent (Automatic After Onboarding)
+
+Runs automatically after first-run onboarding and before any overnight run.
+User never needs to ask.
+
+### The 9 Checks
+
+| # | Check | What It Validates | If It Fails |
+|---|-------|-------------------|-------------|
+| 1 | SSH to head node | Can agent reach the cluster? | Fix SSH key or IP |
+| 2 | SSH head→self | Can CVS parallel-SSH work? | Add key to own authorized_keys |
+| 3 | SSH head→worker(s) | Can CVS reach all nodes? | Copy key to workers |
+| 4 | CVS installed | Is CVS on the head node? | Auto-install |
+| 5 | Jira search | Can agent query Jira? | Guide user to set up Atlassian MCP |
+| 6 | Jira create+close | Can agent create tickets? | Check project permissions |
+| 7 | Confluence search | Can agent find documentation? | Non-critical — skip |
+| 8 | Network interface | What's the management interface? | Auto-discover |
+| 9 | RDMA hardware | What NIC type (Mellanox/Broadcom)? | Auto-discover |
+
+---
+
 ## Feature Summary Matrix
 
-| Feature | Saves Time | Reduces Errors | Enables Overnight | Team-Friendly |
-|---------|-----------|---------------|-------------------|---------------|
-| Overnight Autonomous Mode | 8+ hours/night | Auto-heal fixes | Core feature | Results for everyone |
-| Jira Escalation | 1-2 hours/ticket | Complete diagnostics | Auto-creates tickets | Shared project |
-| Connection Resilience | 0-4 hours/disconnect | No lost work | Enables unattended | Works for all |
-| First-Run Onboarding | 30 min setup | No hardcoded creds | Stores profile | Multi-user |
-| RCCL Pre-Run Validation | 15-30 min/attempt | First-time success | Prevents night failures | Auto-discovers |
-| Auto-Heal Playbook | 5-30 min/fix | 70%+ auto-resolved | Keeps pipeline going | Consistent fixes |
-| Smart Single-Node | 10 min confusion | No false negatives | Correct overnight report | Clear for all |
-| HTTP Report Delivery | 2 min/report | Works everywhere | Reports served | Any browser |
-| Pre-Built Workflows | 30+ min/sequence | Nothing forgotten | One-command overnight | Standardized |
-| Canary-First | 0-2 hours | Catches config early | Saves overnight time | Best practice |
-| Prompt-Injection Defense | N/A | Security | Safe overnight | Trust boundary |
+| # | Feature | Who Decides | Saves Time | Reduces Errors | Enables Overnight |
+|---|---------|------------|-----------|---------------|-------------------|
+| 1 | Overnight Autonomous Mode | User triggers | 8+ hours/night | Auto-heal fixes | Core feature |
+| 2 | Jira Escalation | Agent (auto) | 1-2 hours/ticket | Complete diagnostics | Auto-creates tickets |
+| 3 | Connection Resilience (tmux) | Agent (auto > 5 min) | 0-4 hours/disconnect | No lost work | Enables unattended |
+| 4 | First-Run Onboarding | User triggers once | 30 min setup | No hardcoded creds | Stores profile |
+| 5 | RCCL Pre-Run Validation | Agent (auto) | 15-30 min/attempt | First-time success | Prevents night failures |
+| 6 | Auto-Heal Playbook | Agent (auto) | 5-30 min/fix | 70%+ auto-resolved | Keeps pipeline going |
+| 7 | Smart Single-Node Handling | Agent (auto) | 10 min confusion | No false negatives | Correct overnight report |
+| 8 | HTTP Report Delivery | Agent (auto) | 2 min/report | Works everywhere | Reports served |
+| 9 | Pre-Built Workflows | User selects | 30+ min/sequence | Nothing forgotten | One-command overnight |
+| 10 | Canary-First Pattern | Agent (auto > 1 node) | 0-2 hours | Catches config early | Saves overnight time |
+| 11 | Prompt-Injection Defense | Agent (always) | N/A | Security | Safe overnight |
+| 12 | Persistent Result Storage | Agent (auto, every test) | Audit trail | Never lose results | Morning review |
+| 13 | Auto-Install CVS | Agent (auto if missing) | 30 min install | Zero manual steps | Ready for overnight |
+| 14 | Magic Prompt | User triggers once | 5 min to first result | Single entry point | Any team member |
+| 15 | 9-Point Sanity Check | Agent (auto after setup) | Catches issues in 30s | Fail fast on perms | No 2 AM surprises |
