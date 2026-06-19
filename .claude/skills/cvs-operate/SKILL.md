@@ -303,6 +303,59 @@ Then present the link to the user:
 Always use this pattern — never suggest `xdg-open` or `firefox` as those
 do not work from WSL/remote terminals.
 
+### Persistent Result Storage
+
+**Always** save a copy of every test result to a persistent local folder so
+the user can review past results anytime. Never store results only in `/tmp`
+— they get deleted on reboot.
+
+```bash
+# Create results directory with date AND time stamp
+# Format: ~/Downloads/cvs_results/YYYY-MM-DD_HHMMSS_<suite_name>/
+TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+RESULTS_DIR="$HOME/Downloads/cvs_results/${TIMESTAMP}_<suite_name>"
+mkdir -p "$RESULTS_DIR"
+
+# After every test, copy from head node to local results folder
+scp <headnode>:/path/to/report.html "$RESULTS_DIR/report.html"
+scp <headnode>:/path/to/test.log    "$RESULTS_DIR/test.log"
+
+# Also serve via HTTP for immediate viewing
+cp "$RESULTS_DIR/report.html" /tmp/
+cd /tmp && nohup python3 -m http.server 8888 > /dev/null 2>&1 &
+```
+
+**Folder structure** (each run gets its own timestamped folder):
+```
+~/Downloads/cvs_results/
+├── 2026-06-18_173025_preflight_checks/
+│   ├── report.html
+│   └── test.log
+├── 2026-06-18_174510_host_configs_cvs/
+│   ├── report.html
+│   └── test.log
+├── 2026-06-18_180730_rccl_perf_all_reduce/
+│   ├── report.html
+│   └── test.log
+├── 2026-06-18_230000_full_qualification/    ← overnight run
+│   ├── 01_preflight/
+│   ├── 02_platform/
+│   ├── 03_health/
+│   ├── 04_rccl/
+│   └── summary.txt
+├── 2026-06-19_091500_rccl_perf_all_reduce/  ← next day, same test
+│   ├── report.html
+│   └── test.log
+```
+
+Multiple runs on the same day each get their own folder — nothing is overwritten.
+
+**After every test run**, tell the user:
+> Results saved to `~/Downloads/cvs_results/2026-06-18/<suite>/`
+> Report: http://localhost:8888/report.html
+
+This ensures results are never lost and can be compared across days.
+
 ---
 
 ## Suite Selection Guide

@@ -603,27 +603,58 @@ This is a **false negative** that confuses users.
 
 ---
 
-## 8. HTTP Report Delivery
+## 8. HTTP Report Delivery & Persistent Result Storage
 
 ### Why This Exists
 
 CVS generates HTML reports with detailed test results, charts, and per-node
-breakdowns. On WSL or remote terminals, `xdg-open` and `firefox` don't work.
-Engineers need to **see** these reports in a browser.
+breakdowns. Two problems need solving:
+1. On WSL or remote terminals, `xdg-open` and `firefox` don't work
+2. Results stored in `/tmp` are lost on reboot — no way to review past tests
 
 ### Value
 
 - **Works everywhere**: WSL, remote SSH, headless servers
 - **One-click access**: Copy URL into browser, done
-- **All reports served**: Multiple test reports accessible from same server
+- **Never lose results**: Every test saved to `~/Downloads/cvs_results/` organized by date
+- **Compare across days**: Review yesterday's RCCL bandwidth vs today's
+- **Audit trail**: Full history of every validation run with timestamps
 
 ### How It Works
 
 ```
-    1. scp report from head node → /tmp/report.html
-    2. python3 -m http.server 8888 (background)
-    3. Present: http://localhost:8888/report.html
-    4. User opens in browser → full interactive HTML report
+    1. scp report from head node → ~/Downloads/cvs_results/2026-06-18/<suite>/
+    2. Copy to /tmp/ for HTTP serving
+    3. python3 -m http.server 8888 (background)
+    4. Present: http://localhost:8888/report.html
+    5. User opens in browser → full interactive HTML report
+    6. Results also persist in ~/Downloads/cvs_results/ for future review
+```
+
+### Folder Structure
+
+Each run gets its own **timestamped folder** — multiple runs per day never overwrite:
+
+```
+~/Downloads/cvs_results/
+├── 2026-06-18_173025_preflight_checks/
+│   ├── report.html              ← open in browser anytime
+│   └── test.log                 ← full test output
+├── 2026-06-18_174510_host_configs_cvs/
+│   ├── report.html
+│   └── test.log
+├── 2026-06-18_180730_rccl_perf_all_reduce/
+│   ├── report.html
+│   └── test.log
+├── 2026-06-18_230000_full_qualification/    ← overnight run
+│   ├── 01_preflight/
+│   ├── 02_platform/
+│   ├── 03_health/
+│   ├── 04_rccl/
+│   └── summary.txt
+├── 2026-06-19_091500_rccl_perf_all_reduce/  ← next day comparison
+│   ├── report.html
+│   └── test.log
 ```
 
 ---

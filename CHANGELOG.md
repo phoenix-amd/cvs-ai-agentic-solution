@@ -26,6 +26,7 @@ Architecture documentation added. Professional-grade README for executive review
 | 3 | **JSON Fork Detection** | Detects if a JSON-enhanced CVS fork is installed; automatically uses `cvs run-json`, `cvs list-json`, `cvs compare` when available |
 | 4 | **Executive README** | Added impact metrics table, problem/solution framing, updated architecture diagram showing Jira/Confluence integration |
 | 5 | **New User Guide** | Step-by-step setup guide (6 steps from clone to first result) for sharing with teams |
+| 6 | **Persistent Result Storage** | Every test result saved to `~/Downloads/cvs_results/<date>/<suite>/` — never lost on reboot, reviewable anytime, organized by date and test suite |
 
 ### Relationship with JSON-Enhanced CVS Forks
 
