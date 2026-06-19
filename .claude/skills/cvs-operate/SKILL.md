@@ -104,7 +104,7 @@ Sanity Check Routine:
   3. SSH head→worker(s)          → ssh <head> 'ssh <worker_ip> hostname'
   4. CVS installed               → ssh <head> 'cvs list | head -5'
   5. Jira search                 → jira_search("project = DCCS", limit=1)
-  6. Jira create test ticket     → Create + delete a test issue
+  6. Jira create test ticket     → Create a test issue, then CLOSE it (no delete permission)
   7. Confluence search           → confluence_search("CVS", limit=1)
   8. Network interface discovery → ssh <head> 'ip route get 1'
   9. RDMA hardware check         → ssh <head> 'ibdev2netdev'
@@ -759,3 +759,4 @@ exit code for post-incident review.
 12. Don't create Jira tickets for config/software issues — only escalate real hardware failures
 13. Don't hardcode SSH credentials or Jira project keys — load from `~/.cvs_agent/cluster_profile.json`
 14. Don't store passwords, tokens, or secrets in any project file — use MCP auth or env vars
+15. Don't leave sanity-check Jira tickets open — always close them immediately after creation (no delete permission in most projects)

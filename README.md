@@ -1,21 +1,46 @@
 # CVS AI Agentic Solution
 
-> AI-powered autonomous operator for AMD's [Cluster Validation Suite (CVS)](https://github.com/ROCm/cvs).
-> Tell Claude what you want in plain English — it handles the rest.
+> **Autonomous AI-powered GPU cluster validation** — validates AMD Instinct clusters
+> end-to-end using natural language, runs overnight unattended, auto-heals failures,
+> and escalates hardware issues to Jira with full diagnostics.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-blue.svg)](https://claude.ai/claude-code)
 [![AMD ROCm](https://img.shields.io/badge/AMD-ROCm_CVS-red.svg)](https://github.com/ROCm/cvs)
+[![Field Tested](https://img.shields.io/badge/Field_Tested-MI300X_Cluster-green.svg)](#)
 
 ---
 
+## Executive Summary
+
+| Metric | Impact |
+|--------|--------|
+| **Overnight utilization** | Tests run unattended with auto-heal — zero wasted overnight hours |
+| **Time to first result** | Minutes instead of hours — no manual config, auto-discovers hardware |
+| **Escalation speed** | Hardware failures create Jira tickets in < 1 minute with full diagnostics |
+| **Team onboarding** | New engineers productive in 10 minutes — no CVS expertise needed |
+| **Test coverage** | 34 test suites across platform, health, RCCL, training, and inference |
+| **Connection resilience** | Tests survive laptop disconnects — tmux wrapping on head node |
+
 ## The Problem
 
-Running CVS manually requires memorizing 34 test suites, configuring JSON files, chaining pytest commands, and interpreting raw logs. This is slow and error-prone, especially across large clusters.
+Validating AMD GPU clusters with CVS today requires:
+- **Memorizing 34 test suites** and their config file locations
+- **Manually editing JSON configs** with cluster-specific IPs, interfaces, and paths
+- **Chaining pytest commands** in the right sequence (preflight before RCCL before training)
+- **Babysitting overnight runs** — if a fixable issue occurs at 2 AM, nobody is there to fix it
+- **Manually collecting diagnostics** (rocm-smi, dmesg, ibstat) and creating Jira tickets
+- **Interpreting raw logs** — knowing that single-node bus_bw=0 is expected, not a failure
+
+This is slow, error-prone, and wastes engineering hours — especially across large clusters
+and during overnight qualification runs.
 
 ## The Solution
 
-A Claude Code skill that wraps CVS with natural language understanding. You describe what you want; the agent figures out the commands, configs, and sequence.
+An AI agent built on [Claude Code](https://claude.ai/claude-code) that wraps AMD's
+[Cluster Validation Suite (CVS)](https://github.com/ROCm/cvs) with autonomous
+operation capabilities. You describe what you want in plain English; the agent
+handles configuration, execution, analysis, remediation, and escalation.
 
 ```
 You:    "Run RCCL all_reduce on nodes 10.0.0.1 through 10.0.0.4"
@@ -27,43 +52,93 @@ Agent:  1. Generates cluster.json with those 4 IPs
         5. Reports: "All nodes passed. Avg bus bandwidth: 348 GB/s (target: 330)"
 ```
 
-## Quick Start
+## Quick Start (New User Guide)
 
-### Prerequisites
+Follow these steps to get up and running. Total setup time: ~10 minutes.
 
-- [Claude Code](https://claude.ai/claude-code) installed
-- Python 3.9+ with pip
-- SSH access to your GPU cluster (passwordless key-based)
-- AMD Instinct GPUs (MI300X, MI325X, MI350, MI355X)
+### Step 1: Prerequisites
 
-### Install
+Before you begin, make sure you have:
+
+- **Claude Code** installed ([install guide](https://claude.ai/claude-code))
+  ```bash
+  # Verify Claude Code is installed
+  claude --version
+  ```
+- **Python 3.9+** with pip
+- **SSH key-based access** to your GPU cluster (passwordless)
+- **AMD Instinct GPUs** (MI300X, MI325X, MI350, MI355X)
+- **(Optional) Atlassian MCP** for Jira escalation — [setup guide](https://github.com/sooperset/mcp-atlassian)
+
+### Step 2: Clone and Enter the Project
 
 ```bash
-# 1. Clone this skill
+# Clone from GitHub
 git clone https://github.com/phoenix-amd/cvs-ai-agentic-solution.git
-cd cvs-ai-agentic-solution
 
-# 2. Clone and install upstream CVS
-git clone https://github.com/ROCm/cvs.git
-cd cvs
+# Enter the project directory
+cd cvs-ai-agentic-solution
+```
+
+### Step 3: Install CVS on Your Head Node
+
+CVS runs on the **head node** (the machine with SSH access to all cluster nodes),
+not on your laptop. SSH into your head node and install:
+
+```bash
+# On the head node:
+pip install cvs
+# OR: install from source
+git clone https://github.com/ROCm/cvs.git && cd cvs
 python3 -m venv .cvs_venv && source .cvs_venv/bin/activate
 pip3 install -r requirements.txt
-cd ..
 
-# 3. Verify
+# Verify
 cvs --version && cvs list
 ```
 
-### Use
+### Step 4: Launch Claude Code
 
-Open Claude Code in the project directory:
+From your laptop/workstation (WSL, macOS, or Linux), launch Claude Code
+inside the project directory:
 
 ```bash
 cd cvs-ai-agentic-solution
 claude
 ```
 
-Then just talk:
+Claude Code automatically loads the CVS skills from `.claude/skills/`.
+
+### Step 5: First-Run Onboarding
+
+On your **first run**, the agent will ask you for:
+
+| Question | Example | Purpose |
+|----------|---------|---------|
+| Head node IP | `10.194.129.213` | Where to run CVS commands |
+| Worker node IPs | `10.194.129.211,10.194.129.212` | Nodes to test |
+| SSH username | `rghaffar` | Your login on the cluster |
+| SSH key path | `~/.ssh/id_ed25519` | Key for passwordless SSH |
+| Jira project key | `DCCS` | Where to create escalation tickets |
+
+The agent then runs a **sanity check** to verify everything works:
+SSH connectivity, CVS install, Jira access, network interfaces, RDMA hardware.
+
+### Step 6: Start Talking
+
+```
+You:    "Check if the cluster is healthy"
+Agent:  Runs preflight + platform checks, reports pass/fail per node
+
+You:    "Run RCCL all_reduce on all nodes"
+Agent:  Discovers interfaces, validates env script, runs RCCL, reports bandwidth
+
+You:    "Run full cluster qualification overnight"
+Agent:  Wraps everything in tmux, runs all suites, auto-heals failures,
+        creates Jira tickets for hardware issues — results ready in the morning
+```
+
+### Use
 
 | What you say | What happens |
 |-------------|-------------|
@@ -79,42 +154,42 @@ Then just talk:
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│  User: "run GPU health check on 10.0.0.1"      │
-└──────────────────────┬──────────────────────────┘
-                       │
-                       ▼
-┌──────────────────────────────────────────────────┐
-│  CLAUDE.md (root instructions)                   │
-│  ├── What CVS is, supported hardware             │
-│  ├── 34 test suites with descriptions            │
-│  ├── Natural language → action mapping           │
-│  └── Safety rules & exit codes                   │
-├──────────────────────────────────────────────────┤
-│  .claude/skills/cvs-operate/SKILL.md             │
-│  ├── First-contact guided flow (6 steps)         │
-│  ├── Suite selection guide with paths            │
-│  ├── Config parameters & performance targets     │
-│  ├── Auto-heal playbook                          │
-│  ├── Pre-built workflows                         │
-│  └── Safety: SSH access, prompt-injection defense│
-├──────────────────────────────────────────────────┤
-│  .claude/settings.json                           │
-│  ├── allow: read-only CVS commands               │
-│  ├── ask: test execution, SSH, docker            │
-│  └── deny: rm -rf, reboot, mkfs, force push     │
-├──────────────────────────────────────────────────┤
-│  .claude/hooks/                                  │
-│  ├── post-edit.sh: auto-lint, auto-test          │
-│  └── safety-guard.sh: block dangerous commands   │
-└──────────────────────┬───────────────────────────┘
-                       │
-                       ▼
-┌──────────────────────────────────────────────────┐
-│  Upstream CVS (unmodified)                       │
-│  pip install / git clone ROCm/cvs                │
-│  pytest + parallel-SSH → GPU cluster             │
-└──────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│  User: "run full cluster qualification overnight"                 │
+└──────────────────────────────┬────────────────────────────────────┘
+                               │
+                               ▼
+┌───────────────────────────────────────────────────────────────────┐
+│                    CVS AI AGENTIC SOLUTION                         │
+│                                                                    │
+│  CLAUDE.md ──────────────────── Root instructions                  │
+│  ├── 34 test suites, natural language mapping, safety rules        │
+│                                                                    │
+│  .claude/skills/cvs-operate/ ── Operator playbook                  │
+│  ├── SKILL.md ─── Guided flow, RCCL validation, Jira escalation   │
+│  ├── AUTO_HEAL.md ─── Fix-it-or-escalate decision tree             │
+│  └── WORKFLOWS.md ─── 6 pre-built validation pipelines            │
+│                                                                    │
+│  Key Capabilities:                                                 │
+│  ├── First-run onboarding ─── Collects creds, runs sanity check   │
+│  ├── Auto-discovery ───────── Interfaces, NIC type, MPI paths     │
+│  ├── Connection resilience ── tmux wrapping for long tests         │
+│  ├── Overnight autonomous ── Watchdog + auto-heal + re-run        │
+│  ├── Jira escalation ─────── Hardware failures → ticket + logs    │
+│  ├── HTTP report serving ─── Browser-ready localhost links        │
+│  └── Prompt-injection defense  Cluster output = data, never code  │
+│                                                                    │
+│  Safety tiers: Allow (read-only) | Ask (test exec) | Deny (rm -rf)│
+└──────────────────────────────┬────────────────────────────────────┘
+                               │
+                  ┌────────────┼────────────┐
+                  ▼            ▼            ▼
+┌──────────────────┐ ┌──────────────┐ ┌─────────────────┐
+│  Upstream CVS    │ │  Jira (MCP)  │ │  Confluence     │
+│  (unmodified)    │ │  Escalation  │ │  Documentation  │
+│  pytest + pSSH   │ │  tickets     │ │  pages          │
+│  → GPU cluster   │ │  + logs      │ │                 │
+└──────────────────┘ └──────────────┘ └─────────────────┘
 ```
 
 ## Test Coverage (34 Suites)
@@ -229,25 +304,23 @@ flagged.
 
 ```
 .
-├── CLAUDE.md                              # Root agent instructions
-├── README.md                              # This file
-├── FEATURES.md                            # Detailed feature docs with mechanisms
-├── CHANGELOG.md                           # Version history, fixes, features
+├── CLAUDE.md                              # Root agent instructions (34 suites, safety rules)
+├── README.md                              # This file — overview, quick start, value prop
+├── FEATURES.md                            # Detailed feature docs with flow diagrams
+├── CHANGELOG.md                           # Version history: fixes, features, verifications
 ├── ONENOTE_EXPORT.md                      # Formatted export for documentation
-├── .gitignore
+├── .gitignore                             # Ignores .cvs_agent/, *.html, cluster.json
 └── .claude/
     ├── NOTES.md                           # Working notes & TODOs
-    ├── settings.json                      # Permission rules + hooks
-    ├── hooks/
-    │   ├── post-edit.sh                   # Auto-lint + auto-test
-    │   └── safety-guard.sh                # Dangerous command blocker
+    ├── settings.json                      # Permission rules (allow/ask/deny tiers)
     └── skills/
-        ├── cvs-operate/
-        │   ├── SKILL.md                   # Main operator playbook
-        │   ├── AUTO_HEAL.md               # Auto-remediation decision tree
-        │   └── WORKFLOWS.md               # Pre-built validation sequences
+        ├── cvs-operate/                   # THE MAIN SKILL — cluster validation operator
+        │   ├── SKILL.md                   # Guided flow, RCCL validation, overnight mode,
+        │   │                              #   Jira escalation, sanity check, 15 don'ts
+        │   ├── AUTO_HEAL.md               # Fix-it-or-escalate decision tree
+        │   └── WORKFLOWS.md               # 6 pre-built validation pipelines
         └── cvs-dev/
-            └── SKILL.md                   # Developer workflow guide
+            └── SKILL.md                   # Developer workflow (TDD, linting, testing)
 ```
 
 ## Why Use This
