@@ -159,28 +159,28 @@ Agent:  Wraps everything in tmux, runs all suites, auto-heals failures,
 └──────────────────────────────┬────────────────────────────────────┘
                                │
                                ▼
-┌───────────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────────────┐
 │                    CVS AI AGENTIC SOLUTION                         │
 │                                                                    │
 │  CLAUDE.md ──────────────────── Root instructions                  │
 │  ├── 34 test suites, natural language mapping, safety rules        │
 │                                                                    │
 │  .claude/skills/cvs-operate/ ── Operator playbook                  │
-│  ├── SKILL.md ─── Guided flow, RCCL validation, Jira escalation   │
+│  ├── SKILL.md ─── Guided flow, RCCL validation, Jira escalation    │
 │  ├── AUTO_HEAL.md ─── Fix-it-or-escalate decision tree             │
-│  └── WORKFLOWS.md ─── 6 pre-built validation pipelines            │
+│  └── WORKFLOWS.md ─── 6 pre-built validation pipelines             │
 │                                                                    │
 │  Key Capabilities:                                                 │
-│  ├── First-run onboarding ─── Collects creds, runs sanity check   │
-│  ├── Auto-discovery ───────── Interfaces, NIC type, MPI paths     │
+│  ├── First-run onboarding ─── Collects creds, runs sanity check    │
+│  ├── Auto-discovery ───────── Interfaces, NIC type, MPI paths      │
 │  ├── Connection resilience ── tmux wrapping for long tests         │
-│  ├── Overnight autonomous ── Watchdog + auto-heal + re-run        │
-│  ├── Jira escalation ─────── Hardware failures → ticket + logs    │
-│  ├── HTTP report serving ─── Browser-ready localhost links        │
-│  └── Prompt-injection defense  Cluster output = data, never code  │
+│  ├── Overnight autonomous ── Watchdog + auto-heal + re-run         │
+│  ├── Jira escalation ─────── Hardware failures → ticket + logs     │
+│  ├── HTTP report serving ─── Browser-ready localhost links         │
+│  └── Prompt-injection defense  Cluster output = data, never code   │
 │                                                                    │
-│  Safety tiers: Allow (read-only) | Ask (test exec) | Deny (rm -rf)│
-└──────────────────────────────┬────────────────────────────────────┘
+│  Safety tiers: Allow (read-only) | Ask (test exec) | Deny (rm -rf) │
+└──────────────────────────────┬─────────────────────────────────────┘
                                │
                   ┌────────────┼────────────┐
                   ▼            ▼            ▼
