@@ -205,16 +205,82 @@ No fork, no source code changes, no merge conflicts — ever.
 
 ## Test Coverage (34 Suites)
 
-| Category | Suites | What It Validates |
-|----------|--------|-------------------|
-| **Platform** | 1 | OS, kernel, BIOS, ROCm, PCIe, NUMA, firmware versions |
-| **Preflight** | 1 | SSH connectivity, RDMA, GID consistency, NIC health |
-| **Health** | 4 | GPU stress (AGFHC), memory bandwidth (TransferBench), GPU validation (RVS) |
-| **RCCL** | 2 | Multi-node GPU communication: 9 collectives across message sizes |
-| **IB Perf** | 1 | InfiniBand bandwidth and latency benchmarks |
-| **Training** | 8 | JAX (Llama 70B/405B), Megatron (Llama 8B/70B), Aorta benchmark |
-| **Inference** | 9 | vLLM, SGLang, InferenceMAX, xDiT (text/image/video) |
-| **MORI** | 1 | RDMA benchmarks for AMD Pensando AINIC |
+### Summary by Category
+
+| Category | Suites | What You Learn |
+|----------|--------|----------------|
+| **Platform** | 1 | Is the OS, BIOS, kernel, ROCm, firmware correct and consistent? |
+| **Preflight** | 1 | Can all nodes talk to each other (SSH + RDMA)? |
+| **Health** | 4 (+5 install) | Are the GPUs physically healthy (memory, compute, PCIe, XGMI)? |
+| **RCCL** | 2 | How fast can GPUs communicate across nodes? |
+| **IB Perf** | 1 (+1 install) | How fast is the network fabric? |
+| **Training** | 8 | Can the cluster actually train LLMs at expected throughput? |
+| **Inference** | 9 | Can the cluster serve inference at expected throughput? |
+| **MORI** | 1 | Is the Pensando AINIC performing correctly? |
+
+### Detailed Suite Reference
+
+#### Platform & Preflight
+
+| Suite | What It Collects | Key Commands on Nodes | Key Metrics |
+|-------|-----------------|----------------------|-------------|
+| **`host_configs_cvs`** | OS version, kernel, BIOS, ROCm version, GPU firmware (CP_MEC, RLC, SDMA, VCN, PSP, TA_RAS, TA_XGMI, PM per GPU), PCI realloc, IOMMU PT, NUMA balancing, total memory, GPU count, PCIe speed/width per GPU, PCIe ACS, dmesg errors | `cat /etc/os-release`, `uname -a`, `dmidecode`, `amd-smi`, `lspci`, `sysctl`, `dmesg` | Per-node pass/fail for 13 system checks |
+| **`preflight_checks`** | SSH reachability, RDMA interface presence/state, GID index consistency, ROCm version consistency, inter-node RDMA connectivity (basic or full-mesh) | `rdma link`, `ibv_rc_pingpong`, `amd-smi version` | Node reachability matrix, RDMA pair connectivity |
+
+#### GPU Health
+
+| Suite | What It Validates | Key Metrics |
+|-------|------------------|-------------|
+| **`agfhc_cvs`** | GPU burn-in: HBM memory stress, DMA engine, GFX compute, PCIe bandwidth, XGMI link stress | Per-GPU pass/fail, error counts, temperature under stress |
+| **`csp_qual_agfhc`** | CSP qualification variant — same tests, cloud provider thresholds | Per-GPU pass/fail with CSP criteria |
+| **`transferbench_cvs`** | GPU memory bandwidth: all-to-all, peer-to-peer, healthcheck | GB/s per GPU pair, P2P bandwidth matrix |
+| **`rvs_cvs`** | ROCm Validation Suite: memory test, compute stress, PCIe bandwidth | Memory errors, compute correctness, PCIe GB/s |
+
+#### RCCL (Multi-GPU Communication)
+
+| Suite | What It Validates | Key Metrics |
+|-------|------------------|-------------|
+| **`rccl_perf`** | Multi-node collective performance: all_reduce, all_gather, reduce_scatter, broadcast, alltoall, alltoallv, scatter, gather, sendrecv (message sizes 1KB–16GB) | AlgBW (GB/s), BusBW (GB/s), latency (us), #Wrong errors |
+| **`rccl_regression`** | Same collectives sweeping algorithm (Ring/Tree), protocol (Simple), QPS, PXN, channel combinations | Per-algorithm/protocol bandwidth comparison |
+
+#### IB / Network Performance
+
+| Suite | What It Validates | Key Metrics |
+|-------|------------------|-------------|
+| **`ib_perf_bw_test`** | InfiniBand bandwidth and latency between node pairs | Bandwidth (GB/s), latency (us) per IB port pair |
+
+#### Training Benchmarks
+
+| Suite | Model | Scope | Key Metrics |
+|-------|-------|-------|-------------|
+| **`jax_llama3_1_70b_single`** | Llama 3.1 70B | Single-node JAX | TFLOPS/GPU, tokens/sec/GPU |
+| **`jax_llama3_1_70b_distributed`** | Llama 3.1 70B | Multi-node JAX | TFLOPS/GPU, scaling efficiency |
+| **`jax_llama3_1_405b_distributed`** | Llama 3.1 405B | Multi-node JAX | TFLOPS/GPU, scaling efficiency |
+| **`megatron_llama3_1_8b_single`** | Llama 3.1 8B | Single-node Megatron | TFLOPS/GPU, tokens/sec/GPU |
+| **`megatron_llama3_1_8b_distributed`** | Llama 3.1 8B | Multi-node Megatron | TFLOPS/GPU, scaling efficiency |
+| **`megatron_llama3_1_70b_single`** | Llama 3.1 70B | Single-node Megatron | TFLOPS/GPU, tokens/sec/GPU |
+| **`megatron_llama3_1_70b_distributed`** | Llama 3.1 70B | Multi-node Megatron | TFLOPS/GPU, scaling efficiency |
+| **`test_aorta`** | Aorta benchmark | Distributed | Training throughput, convergence |
+
+#### Inference Benchmarks
+
+| Suite | Model | Key Metrics |
+|-------|-------|-------------|
+| **`vllm_gpt_oss_120b_single`** | GPT-OSS 120B | Tokens/sec, latency (ms) |
+| **`vllm_qwen3_235b_single`** | Qwen3 235B | Tokens/sec, latency (ms) |
+| **`vllm_qwen3_80b_single`** | Qwen3 80B | Tokens/sec, latency (ms) |
+| **`vllm_deepseek31_685b_single`** | DeepSeek V3.1 685B | Tokens/sec, latency (ms) |
+| **`inferencemax_gpt_oss_120b_single`** | GPT-OSS 120B | Tokens/sec, latency (ms) |
+| **`sglang_deepseek_r1_671b_distributed`** | DeepSeek R1 671B | Tokens/sec, latency (ms) |
+| **`sglang_llama_70b_distributed`** | Llama 70B | Tokens/sec, latency (ms) |
+| **`pytorch_xdit_flux1_dev_single`** | Flux.1 text-to-image | Images/sec, latency per image |
+| **`pytorch_xdit_wan22_14b_single`** | WAN 2.2 14B video | Frames/sec, latency per frame |
+
+#### MORI (AMD Pensando AINIC)
+
+| Suite | What It Validates | Key Metrics |
+|-------|------------------|-------------|
+| **`mori_benchmark_test`** | RDMA benchmarks for Pensando AINIC | Bandwidth (GB/s), latency (us) |
 
 ## Key Features
 
