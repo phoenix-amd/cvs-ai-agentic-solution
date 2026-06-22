@@ -391,6 +391,9 @@ interactive HTML dashboard with gauge meters, bandwidth charts, per-node
 comparison tables, and pass/fail status cards. 4 tabs: Overview, Nodes,
 Tests, RCCL Performance. Served via `http://localhost:8888/`.
 
+> **Live Demo**: [View Sample Dashboard](https://phoenix-amd.github.io/cvs-ai-agentic-solution/sample_dashboard.html)
+> — all content is dynamic and changes based on your actual cluster.
+
 ### Self-Update Version Check
 On every session start, the agent checks GitHub for newer versions. If an
 update is available, it informs you and offers to update with one command.
