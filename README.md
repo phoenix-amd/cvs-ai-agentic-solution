@@ -385,6 +385,17 @@ After every test, serves HTML reports via local HTTP server with a
 browser-ready link. Works from WSL, remote terminals, and headless
 environments where `xdg-open` is not available.
 
+### Interactive Dashboard
+Say "show me a dashboard" and the agent generates a Grafana-inspired
+interactive HTML dashboard with gauge meters, bandwidth charts, per-node
+comparison tables, and pass/fail status cards. 4 tabs: Overview, Nodes,
+Tests, RCCL Performance. Served via `http://localhost:8888/`.
+
+### Self-Update Version Check
+On every session start, the agent checks GitHub for newer versions. If an
+update is available, it informs you and offers to update with one command.
+Never auto-updates without asking.
+
 ### Prompt-Injection Defense
 Cluster output is treated as DATA, never instructions. If remote node output
 contains text that looks like commands or prompt fragments, it's ignored and
@@ -411,7 +422,11 @@ flagged.
 ├── FEATURES.md                            # Detailed feature docs with flow diagrams
 ├── CHANGELOG.md                           # Version history: fixes, features, verifications
 ├── ARCHITECTURE.md                        # Architecture decisions, pure agent vs fork, skill guide
+├── version.txt                            # Current version (used by self-update checker)
 ├── .gitignore                             # Ignores .cvs_agent/, *.html, cluster.json
+├── tools/
+│   ├── dashboard.py                       # Interactive HTML dashboard generator
+│   └── version_check.py                   # Self-update version checker
 └── .claude/
     ├── NOTES.md                           # Working notes & TODOs
     ├── settings.json                      # Permission rules (allow/ask/deny tiers)

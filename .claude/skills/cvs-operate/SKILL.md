@@ -121,6 +121,99 @@ Support multiple profiles: `~/.cvs_agent/cluster_profile_<name>.json`
 
 ---
 
+## Self-Update Check (Automatic on Every Session)
+
+On **every new session**, check if a newer version of this skill is available
+on GitHub. If so, inform the user and offer to update.
+
+```bash
+# Check version (runs at session start)
+python3 tools/version_check.py --check --json
+```
+
+| Situation | Agent Action |
+|-----------|-------------|
+| Up to date | Silently continue — no message needed |
+| Update available | Inform: "CVS Agent v1.5.0 available (you have v1.4.0). Update?" |
+| User says yes | `python3 tools/version_check.py --update` |
+| GitHub unreachable | Silently continue — don't block on network issues |
+
+**Current version** is stored in `version.txt` at the project root.
+Never auto-update without asking. Always inform what changed (read CHANGELOG).
+
+---
+
+## Interactive Dashboard
+
+When the user asks for a dashboard, results dashboard, or cluster overview,
+generate an interactive HTML dashboard and serve it via HTTP.
+
+**Trigger phrases**: "show dashboard", "give me a dashboard", "cluster overview",
+"show results dashboard", "visualize results"
+
+### How to Generate the Dashboard
+
+```bash
+# 1. Agent collects cluster data into JSON (template below)
+# 2. Generate HTML dashboard
+python3 tools/dashboard.py --input /tmp/cluster_data.json --output /tmp/dashboard.html
+
+# 3. Serve via HTTP
+cd /tmp && python3 -m http.server 8888 &
+# Present: http://localhost:8888/dashboard.html
+```
+
+### Cluster Data JSON Template
+
+The agent generates this by collecting data from nodes via SSH, then feeds
+it to `tools/dashboard.py`:
+
+```json
+{
+  "title": "Cluster Validation Dashboard",
+  "cluster_name": "dell300x-cluster",
+  "timestamp": "2026-06-22 15:30:00",
+  "agent_version": "1.4.0",
+  "target_config": {
+    "os": "Ubuntu 22.04.5 LTS",
+    "kernel": "6.8.0-110-generic",
+    "rocm": "7.2.0",
+    "bios": "2.7.5",
+    "gpu_count": "8"
+  },
+  "nodes": {
+    "10.0.0.1": {
+      "hostname": "node01", "role": "head",
+      "os": "Ubuntu 22.04.5 LTS", "kernel": "6.8.0-110-generic",
+      "bios": "2.7.5", "rocm": "7.2.0", "gpu_count": "8",
+      "gpu_type": "MI300X", "memory": "2T",
+      "nic_type": "Mellanox mlx5", "rdma_status": "ACTIVE",
+      "mgmt_interface": "eno8303"
+    }
+  },
+  "test_results": [
+    {"suite": "host_configs_cvs", "test": "test_check_os_release",
+     "status": "PASS", "node": "all", "detail": "Ubuntu 22.04.5 LTS", "duration": "1.2s"}
+  ],
+  "rccl_results": [
+    {"size": "1 GB", "algbw_oop": "784.35", "busbw_oop": "109.33",
+     "algbw_ip": "784.35", "busbw_ip": "109.25", "errors": 0}
+  ]
+}
+```
+
+### Dashboard Features
+
+- **4 tabs**: Overview, Node Comparison, Test Results, RCCL Performance
+- **Interactive filtering**: Search by IP, hostname, test name, status
+- **Actual vs Expected**: Green = match, Red = mismatch with expected value shown
+- **RCCL bandwidth chart**: Visual bar chart of bus bandwidth by message size
+- **Summary cards**: Node count, GPU count, pass rate, test totals
+- **Self-contained HTML**: No external dependencies — works offline
+- **Dark theme**: AMD-branded, professional appearance
+
+---
+
 ## Magic Prompt — Single Entry Point for New Users
 
 When a new user doesn't know where to start, they should paste one prompt

@@ -5,7 +5,48 @@ Each version builds on the previous — scroll to the bottom for v1.0.0.
 
 ---
 
-## [1.3.0] - 2026-06-18 — Latest Release
+## [1.4.0] - 2026-06-22 — Latest Release
+
+**What's new since v1.3.0**: Interactive Grafana-style dashboard and
+automatic self-update version checking. The agent now generates beautiful
+dark-themed HTML dashboards with 4 interactive tabs, and checks GitHub for
+newer skill versions on every session start.
+
+### Highlights
+- **Interactive Dashboard**: Grafana-style dark theme with Overview, Node Comparison, Test Results, RCCL Performance tabs
+- **Self-Update Check**: Agent checks GitHub for newer versions on session start, offers to update
+- **Dashboard tools**: `tools/dashboard.py` generates self-contained HTML from cluster data JSON
+- **Version tracking**: `version.txt` + `tools/version_check.py` for automated version management
+
+### New Features
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 1 | **Interactive Dashboard** | Grafana-style HTML dashboard: 4 tabs (Overview, Nodes, Tests, RCCL), interactive filtering, actual-vs-expected comparison, bandwidth charts, summary cards, dark AMD theme |
+| 2 | **Self-Update Check** | Agent checks `version.txt` against latest GitHub tag on every session. Informs user if update available, never auto-updates |
+
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `tools/dashboard.py` | Dashboard HTML generator — reads cluster data JSON, produces self-contained interactive HTML |
+| `tools/version_check.py` | Version checker — compares local vs GitHub, supports `--check`, `--update`, `--current` |
+| `version.txt` | Current version number (used by version checker) |
+
+### Dashboard Capabilities
+
+- 4 interactive tabs: Overview, Node Comparison, Test Results, RCCL Performance
+- Text search filtering across all tables
+- Pass/Fail status filtering dropdown
+- Actual vs Expected value comparison (green = match, red = mismatch)
+- RCCL bandwidth bar chart visualization
+- Summary cards: node count, GPU count, pass rate, test totals
+- Self-contained HTML — no external dependencies, works offline
+- Dark AMD-branded theme inspired by Grafana
+
+---
+
+## [1.3.0] - 2026-06-18
 
 **What's new since v1.2.0**: Zero-friction onboarding for new users. One
 prompt sets up everything — CVS installation, SSH keys, Jira, sanity check.
