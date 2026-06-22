@@ -23,6 +23,7 @@ results/
 !CHANGELOG.md
 !FEATURES.md
 !ARCHITECTURE.md
+!docs/*.html
 
 # CVS agent local config (credentials, cluster profiles — never commit)
 .cvs_agent/
