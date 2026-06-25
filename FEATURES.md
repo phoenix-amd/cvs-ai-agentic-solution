@@ -468,9 +468,9 @@ any of these would make the tool single-user.
 | SSH key file path | Private key contents |
 | Jira project key | Personal access tokens |
 | Jira component | Any secrets |
-| Cluster name/label | |
-| Discovered mgmt interface | |
-| Discovered NIC type | |
+| Cluster name/label | — (stored locally only) |
+| Discovered mgmt interface | — (auto-discovered) |
+| Discovered NIC type | — (auto-discovered) |
 
 ### Immediate Sanity Check
 
