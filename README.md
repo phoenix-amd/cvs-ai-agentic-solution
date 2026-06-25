@@ -392,6 +392,7 @@ comparison tables, and pass/fail status cards. 4 tabs: Overview, Nodes,
 Tests, RCCL Performance. Served via `http://localhost:8888/`.
 
 > **Live Demo**: [View Sample Dashboard](https://phoenix-amd.github.io/cvs-ai-agentic-solution/sample_dashboard.html)
+> | [View Feature Guide](https://phoenix-amd.github.io/cvs-ai-agentic-solution/features.html)
 > — all content is dynamic and changes based on your actual cluster.
 
 ### Self-Update Version Check
