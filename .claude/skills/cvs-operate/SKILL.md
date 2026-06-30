@@ -319,7 +319,7 @@ Check everything is installed and ready, then run a quick health check.
 6. Discover RDMA hardware → ibdev2netdev
 7. Run 9-point sanity check (SSH, CVS, Jira, Confluence, interfaces)
 8. Run preflight_checks → first real validation
-9. Serve HTML report → http://localhost:8888/preflight.html
+9. Serve HTML report → http://localhost:7788/preflight.html
 10. Report: "Cluster is ready / not ready, here's what was found"
 ```
 
@@ -526,16 +526,16 @@ agent runs on WSL or a remote machine where `xdg-open` does not work.
 # Copy HTML report from head node to local /tmp
 scp <headnode>:/path/to/report.html /tmp/report.html
 
-# Start HTTP server (pick an unused port, default 8888)
-cd /tmp && nohup python3 -m http.server 8888 > /dev/null 2>&1 &
+# Start HTTP server (pick an unused port, default 7788)
+cd /tmp && nohup python3 -m http.server 7788 > /dev/null 2>&1 &
 
 # Verify it's serving
-curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/report.html
+curl -s -o /dev/null -w "%{http_code}" http://localhost:7788/report.html
 ```
 
 Then present the link to the user:
 
-> **Report ready:** http://localhost:8888/report.html
+> **Report ready:** http://localhost:7788/report.html
 
 Always use this pattern — never suggest `xdg-open` or `firefox` as those
 do not work from WSL/remote terminals.
@@ -574,7 +574,7 @@ scp <headnode>:/path/to/test.log    "$RESULTS_DIR/test.log"
 
 # Also serve via HTTP for immediate viewing
 cp "$RESULTS_DIR/report.html" /tmp/
-cd /tmp && nohup python3 -m http.server 8888 > /dev/null 2>&1 &
+cd /tmp && nohup python3 -m http.server 7788 > /dev/null 2>&1 &
 ```
 
 **Folder structure** (each run gets its own timestamped folder):
@@ -604,7 +604,7 @@ Multiple runs on the same day each get their own folder — nothing is overwritt
 
 **After every test run**, tell the user:
 > Results saved to `~/Downloads/cvs_results/2026-06-18/<suite>/`
-> Report: http://localhost:8888/report.html
+> Report: http://localhost:7788/report.html
 
 This ensures results are never lost and can be compared across days.
 

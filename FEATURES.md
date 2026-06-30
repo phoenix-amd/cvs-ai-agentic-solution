@@ -654,7 +654,7 @@ breakdowns. Two problems need solving:
 ```
     1. scp report from head node → ~/Downloads/cvs_results/2026-06-18/<suite>/
     2. Copy to /tmp/ for HTTP serving
-    3. python3 -m http.server 8888 (background)
+    3. python3 -m http.server 7788 (background)
     4. Present: http://localhost:7788/report.html
     5. User opens in browser → full interactive HTML report
     6. Results also persist in ~/Downloads/cvs_results/ for future review
