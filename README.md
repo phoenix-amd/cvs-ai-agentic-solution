@@ -150,7 +150,7 @@ automatically — you just watch:
   7   Checks Jira MCP connection                         Nothing*
   8   Runs 9-point sanity check                          Nothing
   9   Runs preflight + platform health check             Nothing
- 10   Serves HTML report at http://localhost:8888         Open browser
+ 10   Serves HTML report at http://localhost:7788         Open browser
 
  * If Jira MCP is not configured, the agent tells you how to set it up.
    All CVS tests still work — only Jira escalation is skipped.
@@ -432,11 +432,14 @@ environments where `xdg-open` is not available.
 Say "show me a dashboard" and the agent generates a Grafana-inspired
 interactive HTML dashboard with gauge meters, bandwidth charts, per-node
 comparison tables, and pass/fail status cards. 4 tabs: Overview, Nodes,
-Tests, RCCL Performance. Served via `http://localhost:8888/`.
+Tests, RCCL Performance. Served locally via `http://localhost:7788/`.
 
-> **Live Demo**: [View Sample Dashboard](https://phoenix-amd.github.io/cvs-ai-agentic-solution/sample_dashboard.html)
+> **Static Sample**: [View Sample Dashboard](https://phoenix-amd.github.io/cvs-ai-agentic-solution/sample_dashboard.html)
 > | [View Feature Guide](https://phoenix-amd.github.io/cvs-ai-agentic-solution/features.html)
-> — all content is dynamic and changes based on your actual cluster.
+>
+> The sample is a static example for reference only. **Live dashboards are
+> always generated fresh** from real test data and served locally — the agent
+> prints a clickable `http://localhost:7788/` link in the conversation.
 
 ### Self-Update Version Check
 On every session start, the agent checks GitHub for newer versions. If an
@@ -493,6 +496,7 @@ cvs-ai-headless "your prompt here"  # one-shot pipe mode, no UI
 ├── .gitignore                             # Ignores .cvs_agent/, *.html, cluster.json
 ├── tools/
 │   ├── cvs-ai.sh                          # Two-mode launcher (interactive/autonomous/headless)
+│   ├── cssh.sh                            # Clean SSH wrapper (strips Conductor banner noise)
 │   ├── dashboard.py                       # Interactive HTML dashboard generator
 │   └── version_check.py                   # Self-update version checker
 └── .claude/

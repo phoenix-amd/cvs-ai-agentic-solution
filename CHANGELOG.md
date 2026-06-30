@@ -5,7 +5,46 @@ Each version builds on the previous — scroll to the bottom for v1.0.0.
 
 ---
 
-## [1.5.0] - 2026-06-30 — Latest Release
+## [1.6.0] - 2026-06-30 — Latest Release
+
+**What's new since v1.5.0**: SSH banner noise eliminated, RCCL `-Z json`
+compatibility detection, and dynamic localhost dashboards.
+
+### Highlights
+- **SSH wrapper (`cssh`)**: Strips AMD Conductor 18-line banner from all SSH output — clean agent parsing
+- **RCCL `-Z json` detection**: Auto-detects rccl-tests version before running; prevents silent 6-second exit on OLD binaries
+- **Dynamic localhost dashboard**: Always generated fresh from real results, served on port 7788, clickable link in Claude — no GitHub push needed
+- **Standardized port 7788**: All dashboard/report serving uses `http://localhost:7788/`
+
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `tools/cssh.sh` | SSH wrapper — strips Conductor banner (ASCII logo, auth reminders, 18 lines of noise) |
+
+### Bug Fixes
+
+| # | Issue | Root Cause | Fix |
+|---|-------|-----------|-----|
+| 1 | **Conductor banner pollutes SSH output** | AMD Conductor prints 18-line banner on every SSH connection | Created `cssh.sh` wrapper that filters banner via grep; SKILL.md mandates its use |
+| 2 | **RCCL silent exit with `-Z json -x`** | Older rccl-tests builds don't support `-Z json`; binary exits in ~6 seconds with no output | Added mandatory `-Z json` detection step; if unsupported, remove `rccl_result_file` from config |
+| 3 | **Dashboard required GitHub push** | Previous design pushed HTML to GitHub Pages for a public URL | Dashboard now served locally on port 7788; agent prints localhost link directly |
+
+### Files Changed
+
+| File | What Changed |
+|------|-------------|
+| `tools/cssh.sh` | **NEW** — SSH wrapper script |
+| `CLAUDE.md` | Added cssh rule, `-Z json` detection rule, localhost:7788 dashboard rule |
+| `.claude/skills/cvs-operate/SKILL.md` | SSH wrapper section, `-Z json` detection step, dashboard port 7788 |
+| `README.md` | Updated dashboard section (localhost:7788), project structure (cssh.sh) |
+| `FEATURES.md` | Updated all port references (8888 → 7788) |
+| `ARCHITECTURE.md` | Added cssh.sh to file reference |
+| `CHANGELOG.md` | This entry |
+
+---
+
+## [1.5.0] - 2026-06-30
 
 **What's new since v1.4.0**: Autonomous mode now runs fully unattended — zero
 permission prompts from the Claude Code harness. Three operational bugs fixed

@@ -1,0 +1,81 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(bash /home/rghaffari/cvs-ai-agentic-solution-dell2N/tools/cvs-ai.sh --help)",
+      "Bash(bash /home/rghaffari/cvs-ai-agentic-solution-dell2N/tools/cvs-ai.sh --version)",
+      "Bash(cp:*)",
+      "Skill(update-config)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(mkdir:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(sleep:*)",
+      "Bash(tail:*)",
+      "Bash(head:*)",
+      "Bash(tmux:*)",
+      "Bash(mpirun:*)",
+      "Bash(find:*)",
+      "Bash(python3:*)",
+      "Bash(pytest:*)",
+      "Bash(pip3:*)",
+      "Bash(pip:*)",
+      "Bash(git:*)",
+      "Bash(source:*)",
+      "Bash(echo:*)",
+      "Bash(ssh-keygen:*)",
+      "Bash(rm:*)",
+      "Bash(ls:*)",
+      "Bash(cd:*)",
+      "Bash(nohup:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(kill:*)",
+      "Bash(unzip:*)",
+      "Bash(/home/rghaffari/cvs-ai-agentic-solution-dell2N/tools/cssh.sh:*)"
+    ]
+  },
+  "autoMode": {
+    "allow": [
+      "SSH commands to cluster nodes (10.194.x.x) for CVS operations including StrictHostKeyChecking=no, BatchMode=yes, inline python3, heredocs, and multi-line commands with comments",
+      "cssh.sh wrapper commands for clean SSH output to cluster nodes",
+      "python3 -m http.server for serving dashboard HTML reports on localhost:7788",
+      "pkill and kill commands for stopping background HTTP servers or stale processes",
+      "unzip commands for extracting CVS test report archives from /tmp/",
+      "SCP file transfers to/from cluster nodes (10.194.x.x)",
+      "Heredoc and cat commands writing config files to ~/.cvs_agent/, ~/cvs/, ~/cluster.json, ~/mlx5_env_script.sh, ~/cvs_results/",
+      "mkdir -p for creating config directories (~/.cvs_agent, ~/cvs_results)",
+      "Reading, grepping, and tailing files in /tmp/ for log monitoring and result parsing",
+      "sleep && tail/grep commands for polling test progress",
+      "SSH with ssh-keygen for generating MPI keys on cluster nodes",
+      "tmux commands via SSH for wrapping long-running tests",
+      "mpirun commands via SSH for verifying MPI rank distribution",
+      "find commands via SSH for locating binaries on cluster nodes",
+      "Python3 scripts via SSH (inline or heredoc) for parsing configs and results",
+      "pytest commands for running CVS test suites",
+      "pip/pip3 install commands for installing CVS and dependencies",
+      "git clone for installing CVS from source",
+      "Writing cluster profiles, env scripts, and config files with heredoc syntax",
+      "Commands with empty quotes (like -N '' for ssh-keygen passphrase or -o StrictHostKeyChecking=no)",
+      "Multi-line SSH commands containing # comments for readability",
+      "Commands containing shell variable expansion ($HOME, $USER, etc.)",
+      "rm -rf for cleaning stale /tmp directories from previous test runs (NOT system directories)"
+    ],
+    "soft_deny": [
+      "rm -rf / or rm -rf /* (system-wide deletion)",
+      "reboot, shutdown, poweroff, halt commands",
+      "mkfs, fdisk, dd if= (disk formatting/writing)",
+      "git push --force or git push -f",
+      "Commands targeting nodes NOT in the cluster profile (outside 10.194.x.x range)"
+    ],
+    "environment": [
+      "This is a CVS (Cluster Validation Suite) project for validating AMD GPU clusters",
+      "The user operates in autonomous mode — all SSH, pytest, CVS, and MPI commands should proceed without prompting",
+      "Cluster nodes are in the 10.194.x.x range with SSH user rghaffar and key ~/.ssh/id_rsa",
+      "Commands frequently use heredoc syntax, inline python3 via SSH, multi-line SSH with # comments, and -o flags with empty quotes",
+      "/tmp/ is used for test logs and results — reading and cleaning stale files there is routine and safe",
+      "The deny hooks in settings.json block truly destructive operations regardless of auto mode"
+    ]
+  }
+}

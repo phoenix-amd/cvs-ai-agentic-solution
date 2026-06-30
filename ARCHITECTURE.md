@@ -308,4 +308,5 @@ Fork Architecture:
 | `.claude/skills/cvs-operate/WORKFLOWS.md` | 6 pre-built validation pipelines |
 | `.claude/skills/cvs-dev/SKILL.md` | Developer workflow: TDD, linting, testing |
 | `.claude/settings.json` | Permission tiers: allow, ask, deny |
+| `tools/cssh.sh` | Clean SSH wrapper — strips AMD Conductor banner noise from SSH output |
 | `.gitignore` | Ignores credentials, logs, HTML reports, cluster.json |

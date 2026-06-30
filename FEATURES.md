@@ -399,7 +399,7 @@ based on estimated test duration. If runtime > 5 minutes → tmux wrapping.
           Agent: "AGFHC completed at 3:14 AM. 15/16 GPUs passed.
                   GPU 3 on node .211 had HBM errors — Jira DCCS-6490
                   created with diagnostics. Report ready at
-                  http://localhost:8888/agfhc_report.html"
+                  http://localhost:7788/agfhc_report.html"
 ```
 
 ---
@@ -655,7 +655,7 @@ breakdowns. Two problems need solving:
     1. scp report from head node → ~/Downloads/cvs_results/2026-06-18/<suite>/
     2. Copy to /tmp/ for HTTP serving
     3. python3 -m http.server 8888 (background)
-    4. Present: http://localhost:8888/report.html
+    4. Present: http://localhost:7788/report.html
     5. User opens in browser → full interactive HTML report
     6. Results also persist in ~/Downloads/cvs_results/ for future review
 ```
@@ -825,7 +825,7 @@ needs to ask. Storage location is auto-detected based on OS.
     2. Creates timestamped folder: YYYY-MM-DD_HHMMSS_<suite_name>/
     3. scp report.html + test.log from head node → local results folder
     4. Copies report.html to /tmp/ for HTTP serving
-    5. Tells user: "Results saved to <path>. Report: http://localhost:8888/..."
+    5. Tells user: "Results saved to <path>. Report: http://localhost:7788/..."
 ```
 
 ### Scenario
