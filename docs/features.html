@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CVS AI Agentic Solution — Feature Guide</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0d1a;color:#ddd;line-height:1.6}
+a{color:#4488ff;text-decoration:none}a:hover{text-decoration:underline}
+.hdr{background:linear-gradient(135deg,#12122a,#1a1a3a);padding:20px 40px;border-bottom:3px solid #ed1c24}
+.hdr h1{font-size:24px;color:#fff}.hdr .sub{color:#888;font-size:13px;margin-top:4px}
+.hdr .badges{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:700}
+.badge-red{background:#2a0a0a;color:#ed1c24}.badge-green{background:#0a2a15;color:#00c896}
+.badge-blue{background:#0a1a3a;color:#4488ff}
+.nav{background:#111128;padding:12px 40px;border-bottom:1px solid #252540;display:flex;flex-wrap:wrap;gap:6px}
+.nav a{color:#888;font-size:12px;padding:4px 12px;border-radius:4px;background:#1a1a30}
+.nav a:hover{color:#fff;background:#252540;text-decoration:none}
+.cnt{max-width:1100px;margin:0 auto;padding:24px 40px}
+h2{font-size:22px;color:#fff;margin:40px 0 8px;padding-bottom:8px;border-bottom:2px solid #ed1c24}
+h3{font-size:16px;color:#ed1c24;margin:24px 0 8px}
+p{margin:8px 0;color:#bbb;font-size:14px}
+ul{margin:8px 0 8px 20px}li{color:#bbb;font-size:14px;margin:4px 0}
+strong{color:#fff}code{background:#1e1e38;padding:2px 6px;border-radius:3px;font-size:13px;color:#00c896}
+pre{background:#0a0a18;border:1px solid #252540;border-radius:8px;padding:16px;margin:12px 0;overflow-x:auto;font-size:12px;color:#aaa;line-height:1.5}
+table{width:100%;border-collapse:collapse;margin:12px 0;background:#161630;border-radius:8px;overflow:hidden}
+thead th{background:#1e1e38;color:#ccc;padding:10px 14px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #ed1c24}
+tbody td{padding:9px 14px;border-bottom:1px solid #1e1e30;font-size:13px;color:#bbb}
+tbody tr:hover{background:#1a1a35}
+.p{color:#00c896;font-weight:600}.f{color:#ff5555;font-weight:600}.w{color:#ff8c00;font-weight:600}
+.section{background:#161630;border-radius:8px;padding:20px 24px;margin:16px 0;border-left:3px solid #ed1c24}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:16px 0}
+.card{background:#1a1a30;border-radius:8px;padding:16px;border-top:3px solid #333}
+.card h4{color:#fff;font-size:14px;margin-bottom:6px}.card p{font-size:12px;color:#888}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-right:4px}
+.tag-auto{background:#0a2a15;color:#00c896}.tag-user{background:#2a1a0a;color:#ff8c00}.tag-always{background:#0a1a3a;color:#4488ff}
+.ftr{text-align:center;padding:20px;color:#444;font-size:11px;border-top:1px solid #1a1a30;margin-top:40px}
+@media(max-width:768px){.cnt{padding:16px}.cards{grid-template-columns:1fr}}
+</style></head><body>
+
+<div class="hdr">
+<h1>CVS AI Agentic Solution — Feature Guide</h1>
+<div class="sub">Comprehensive technical documentation of every capability. Designed for technical presentations, architecture reviews, and executive briefings.</div>
+<div class="badges">
+<span class="badge badge-red">15 Features</span>
+<span class="badge badge-green">34 Test Suites</span>
+<span class="badge badge-blue">Pure Agent Layer</span>
+<span class="badge badge-green">Zero Fork Maintenance</span>
+<span class="badge badge-red">Field-Tested MI300X</span>
+</div>
+</div>
+
+<div class="nav">
+<a href="#f1">1. Overnight Mode</a><a href="#f2">2. Jira Escalation</a><a href="#f3">3. tmux Resilience</a>
+<a href="#f4">4. Onboarding</a><a href="#f5">5. RCCL Validation</a><a href="#f6">6. Auto-Heal</a>
+<a href="#f7">7. Single-Node</a><a href="#f8">8. Reports & Storage</a><a href="#f9">9. Workflows</a>
+<a href="#f10">10. Canary-First</a><a href="#f11">11. Prompt Defense</a><a href="#f12">12. Persistent Results</a>
+<a href="#f13">13. Auto-Install</a><a href="#f14">14. Magic Prompt</a><a href="#f15">15. Sanity Check</a>
+<a href="#matrix">Summary Matrix</a>
+</div>
+
+<div class="cnt">
+
+<!-- FEATURE 1 -->
+<h2 id="f1">1. Overnight Autonomous Mode <span class="tag tag-user">User Triggers</span></h2>
+<div class="section">
+<h3>Why This Exists</h3>
+<p>GPU cluster validation tests take <strong>hours</strong>. If a fixable issue occurs at 2 AM (wrong config, NUMA balancing enabled), the entire overnight window is wasted. Nobody is watching. The team arrives at 8 AM, sees the failure, fixes it, waits another 4 hours.</p>
+<h3>Value</h3>
+<ul>
+<li><strong>Zero wasted overnight hours</strong> — agent auto-heals fixable issues and re-runs</li>
+<li><strong>Morning-ready results</strong> — consolidated pass/fail report waiting at 8 AM</li>
+<li><strong>Hardware issues caught immediately</strong> — Jira tickets created at 2:01 AM, not 10 AM</li>
+</ul>
+</div>
+
+<h3>Failure Classification</h3>
+<table>
+<thead><tr><th>Signal in Logs</th><th>Classification</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td><code>&lt;changeme&gt;</code> in config</td><td class="w">Config issue</td><td class="p">Fix the config field, re-run</td></tr>
+<tr><td><code>Permission denied (publickey)</code></td><td class="w">SSH issue</td><td class="p">Fix SSH keys, re-run</td></tr>
+<tr><td><code>No network interfaces for OOB</code></td><td class="w">Config issue</td><td class="p">Discover correct interface, re-run</td></tr>
+<tr><td><code>NCCL failure: invalid usage</code></td><td class="w">Software issue</td><td class="p">Fix env script, re-run</td></tr>
+<tr><td><code>numa_balancing = 1</code></td><td class="w">Config issue</td><td class="p">Auto-fix: <code>echo 0 > .../numa_balancing</code>, re-run</td></tr>
+<tr><td><code>Container not found</code></td><td class="w">Software issue</td><td class="p">Auto-fix: <code>docker pull</code>, re-run</td></tr>
+<tr><td><code>GPU not detected</code> / missing in lspci</td><td class="f">Hardware</td><td class="f">Collect diagnostics → Jira</td></tr>
+<tr><td><code>ECC error</code> / page retirement in dmesg</td><td class="f">Hardware</td><td class="f">Collect diagnostics → Jira</td></tr>
+<tr><td><code>PCIe width x8</code> (expected x16)</td><td class="f">Hardware</td><td class="f">Collect diagnostics → Jira</td></tr>
+<tr><td><code>XGMI link failure</code></td><td class="f">Hardware</td><td class="f">Collect diagnostics → Jira</td></tr>
+<tr><td><code>ibstat: port DOWN</code></td><td class="f">Hardware</td><td class="f">Collect diagnostics → Jira</td></tr>
+<tr><td><code>amdgpu: GPU reset</code> in dmesg</td><td class="f">Hardware</td><td class="f">Collect diagnostics → Jira</td></tr>
+<tr><td>Repeated RCCL timeout after env fix</td><td class="f">Hardware</td><td class="f">Collect diagnostics → Jira</td></tr>
+</tbody></table>
+
+<h3>Overnight Timeline Example</h3>
+<table>
+<thead><tr><th>Time</th><th>Actor</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td><strong>6:00 PM</strong></td><td class="w">User</td><td>"Run full cluster qualification overnight"</td></tr>
+<tr><td><strong>6:01 PM</strong></td><td style="color:#4488ff">Agent</td><td>Generates watchdog script, launches in tmux on head node</td></tr>
+<tr><td><strong>6:02 PM</strong></td><td style="color:#4488ff">Agent</td><td>Runs preflight → PASS → continues to platform checks</td></tr>
+<tr><td><strong>6:05 PM</strong></td><td class="w">User</td><td>Disconnects laptop — goes home. Test keeps running.</td></tr>
+<tr><td><strong>8:30 PM</strong></td><td class="p">Agent</td><td>Platform checks PASS → continues to GPU health (AGFHC)</td></tr>
+<tr><td><strong>2:14 AM</strong></td><td class="f">Agent</td><td>AGFHC detects HBM error on GPU 3 → classifies as HARDWARE</td></tr>
+<tr><td><strong>2:14 AM</strong></td><td style="color:#4488ff">Agent</td><td>Collects diagnostics: rocm-smi, dmesg, ibstat from affected node</td></tr>
+<tr><td><strong>2:15 AM</strong></td><td class="f">Agent</td><td>Creates Jira DCCS-6490 with logs attached, continues to next suite</td></tr>
+<tr><td><strong>4:30 AM</strong></td><td class="p">Agent</td><td>RCCL all_reduce complete → writes summary.txt</td></tr>
+<tr><td><strong>7:00 AM</strong></td><td class="w">User</td><td>Reconnects → summary report ready, HTML reports served, Jira listed</td></tr>
+</tbody></table>
+
+<!-- FEATURE 2 -->
+<h2 id="f2">2. Jira Escalation for Hardware Failures <span class="tag tag-auto">Agent Auto</span></h2>
+<div class="section">
+<h3>Why This Exists</h3>
+<p>When a GPU has a memory error at 3 AM, the manual workflow wastes <strong>9 hours</strong>: nobody notices until morning → engineer checks logs → copies to Jira → collects diagnostics → hardware team gets ticket at 11 AM. With automated escalation, the ticket exists at 3:01 AM with all diagnostics attached.</p>
+<h3>Value</h3>
+<ul>
+<li><strong>Instant escalation</strong> — hardware team notified within minutes</li>
+<li><strong>Complete diagnostics</strong> — every ticket has rocm-smi, dmesg, ibstat, test logs</li>
+<li><strong>Consistent ticket quality</strong> — same structured format every time</li>
+</ul>
+</div>
+
+<h3>What Triggers Jira vs What's Auto-Fixed</h3>
+<div class="cards">
+<div class="card" style="border-top-color:#ff5555">
+<h4 style="color:#ff5555">Triggers Jira (Hardware Only)</h4>
+<p>GPU not detected in lspci<br>HBM ECC uncorrectable errors<br>PCIe link degraded (x8 instead of x16)<br>XGMI link failure between GPUs<br>IB port DOWN in ibstat<br>amdgpu reset/hang/fault in dmesg<br>RAS uncorrectable errors</p>
+</div>
+<div class="card" style="border-top-color:#00c896">
+<h4 style="color:#00c896">Does NOT Trigger Jira (Auto-Fixed)</h4>
+<p>Wrong mpi_oob_port → agent fixes config<br>Wrong env script for NIC → agent creates new one<br>SSH key permissions → agent chmod 600<br>&lt;changeme&gt; in config → agent fills values<br>NUMA balancing enabled → agent disables<br>Docker image not pulled → agent pulls<br>Single-node bus_bw=0 → expected behavior</p>
+</div>
+</div>
+
+<!-- FEATURE 3 -->
+<h2 id="f3">3. Connection Resilience (tmux) <span class="tag tag-auto">Agent Auto &gt; 5 min</span></h2>
+<div class="section">
+<h3>Why This Exists</h3>
+<p>If your laptop sleeps, VPN reconnects, or SSH times out — the CVS process receives SIGHUP and <strong>dies</strong>. A 4-hour AGFHC test at hour 3 = completely wasted.</p>
+</div>
+
+<h3>When tmux Is Used (Automatic — User Never Asks)</h3>
+<table>
+<thead><tr><th>Test</th><th>Duration</th><th>tmux?</th><th>Agent Behavior</th></tr></thead>
+<tbody>
+<tr><td>preflight</td><td>&lt; 2 min</td><td>No</td><td>Run directly via SSH</td></tr>
+<tr><td>host_configs</td><td>&lt; 2 min</td><td>No</td><td>Run directly via SSH</td></tr>
+<tr><td>RCCL single collective</td><td>1-5 min</td><td>No</td><td>Run directly via SSH</td></tr>
+<tr><td>RCCL full sweep</td><td>10-30 min</td><td class="p"><strong>Auto</strong></td><td>Wraps in tmux, tells user: "Safe to disconnect"</td></tr>
+<tr><td>AGFHC level 1</td><td>15-30 min</td><td class="p"><strong>Auto</strong></td><td>Wraps in tmux, tells user: "Safe to disconnect"</td></tr>
+<tr><td>AGFHC level 3</td><td>2-8 hours</td><td class="p"><strong>Auto</strong></td><td>Wraps in tmux, tells user: "Safe to disconnect"</td></tr>
+<tr><td>Training benchmarks</td><td>30+ min</td><td class="p"><strong>Auto</strong></td><td>Wraps in tmux, tells user: "Safe to disconnect"</td></tr>
+<tr><td>Full qualification</td><td>1-4 hours</td><td class="p"><strong>Auto</strong></td><td>Wraps in tmux, tells user: "Safe to disconnect"</td></tr>
+<tr><td>User says "overnight"</td><td>Hours</td><td style="color:#4488ff"><strong>Always</strong></td><td>Wraps in tmux + watchdog script</td></tr>
+</tbody></table>
+
+<!-- FEATURE 4 -->
+<h2 id="f4">4. First-Run Onboarding <span class="tag tag-user">User Triggers Once</span></h2>
+<div class="section">
+<h3>Why This Exists</h3>
+<p>This tool is designed to be <strong>shared across teams</strong>. Different engineers have different SSH keys, clusters, Jira projects. Hardcoding any of these would make it single-user.</p>
+</div>
+
+<h3>What's Stored vs What's NOT Stored</h3>
+<table>
+<thead><tr><th>Stored in Profile</th><th>NOT Stored (Never)</th></tr></thead>
+<tbody>
+<tr><td>Head node IP</td><td class="f">Passwords</td></tr>
+<tr><td>Worker node IPs</td><td class="f">API tokens</td></tr>
+<tr><td>SSH username</td><td class="f">Jira credentials (use MCP auth)</td></tr>
+<tr><td>SSH key file path</td><td class="f">Private key contents</td></tr>
+<tr><td>Jira project key</td><td class="f">Personal access tokens</td></tr>
+<tr><td>Jira component</td><td class="f">Any secrets</td></tr>
+<tr><td>Cluster name/label</td><td style="color:#666">— stored locally only</td></tr>
+<tr><td>Discovered mgmt interface</td><td style="color:#666">— auto-discovered</td></tr>
+<tr><td>Discovered NIC type</td><td style="color:#666">— auto-discovered</td></tr>
+</tbody></table>
+
+<!-- FEATURE 5 -->
+<h2 id="f5">5. RCCL Pre-Run Validation <span class="tag tag-auto">Agent Auto</span></h2>
+<div class="section">
+<h3>Why This Exists</h3>
+<p>In our field testing, we hit <strong>3 separate config issues</strong> before RCCL ran successfully. Each wasted 5-10 minutes. Now the agent discovers all values <strong>before</strong> running.</p>
+</div>
+
+<!-- FEATURE 6 -->
+<h2 id="f6">6. Auto-Heal Playbook <span class="tag tag-auto">Agent Auto</span></h2>
+<div class="section">
+<h3>Why This Exists</h3>
+<p>Most CVS test failures are <strong>configuration issues</strong>, not hardware problems. The agent reduces engineer intervention by <strong>70%+</strong> for common issues.</p>
+</div>
+
+<h3>Decision Tree</h3>
+<div class="cards">
+<div class="card" style="border-top-color:#00c896">
+<h4 style="color:#00c896">SAFE (Auto-Fix, No Approval)</h4>
+<p>NUMA balancing → echo 0<br>Docker pull → docker pull &lt;image&gt;<br>SSH key chmod → chmod 600<br>Config &lt;changeme&gt; → replace with discovered<br>Wrong env script → generate correct one<br>Wrong mpi_oob_port → discover and set</p>
+</div>
+<div class="card" style="border-top-color:#ff8c00">
+<h4 style="color:#ff8c00">MODERATE (Suggest to User)</h4>
+<p>Firewall disable for RDMA ports<br>GRUB config changes (iommu=pt)<br>ROCm version update</p>
+</div>
+<div class="card" style="border-top-color:#ff5555">
+<h4 style="color:#ff5555">CRITICAL (Escalate + Jira)</h4>
+<p>GPU not detected<br>HBM/ECC errors<br>PCIe link degraded<br>IB port down<br>GPU reset/hang in dmesg</p>
+</div>
+</div>
+
+<!-- FEATURE 7 -->
+<h2 id="f7">7. Smart Single-Node Handling <span class="tag tag-auto">Agent Auto</span></h2>
+<div class="section">
+<h3>Why This Exists</h3>
+<p>CVS RCCL baselines are for multi-node. Single-node bus_bw=0 is expected but CVS reports <strong>FAILED</strong> — a false negative that confuses users.</p>
+</div>
+
+<h3>What the Agent Reports Instead</h3>
+<table>
+<thead><tr><th>What CVS Reports</th><th>What Agent Reports</th></tr></thead>
+<tbody>
+<tr><td class="f">FAILED (exit code 1)</td><td class="p">"RCCL communication healthy (single-node)"</td></tr>
+<tr><td class="f">Avg bus bandwidth: 0</td><td class="p">"Peak AlgBW: 1,985 GB/s (XGMI intra-node)"</td></tr>
+<tr><td class="f">Baseline comparison fails</td><td class="p">"Baselines N/A for single-node"</td></tr>
+<tr><td class="p">#Wrong: 0 across all sizes</td><td class="p">"Zero correctness errors"</td></tr>
+</tbody></table>
+
+<!-- FEATURE 8 -->
+<h2 id="f8">8. HTTP Report Delivery & Persistent Storage <span class="tag tag-auto">Agent Auto</span></h2>
+<div class="section">
+<p>Every test result saved to timestamped folder. Auto-detects OS for storage path. Served via HTTP for browser viewing.</p>
+</div>
+
+<!-- FEATURE 9 -->
+<h2 id="f9">9. Pre-Built Workflows <span class="tag tag-user">User Selects</span></h2>
+<table>
+<thead><tr><th>Workflow</th><th>Suites</th><th>Duration</th><th>Use When</th></tr></thead>
+<tbody>
+<tr><td><strong>Full Cluster Qualification</strong></td><td>5 suites</td><td>1-4 hours</td><td>New cluster, post-maintenance</td></tr>
+<tr><td><strong>Quick Health Check</strong></td><td>2 suites</td><td>~2 minutes</td><td>Daily spot-check</td></tr>
+<tr><td><strong>Network Validation</strong></td><td>3 suites</td><td>15-30 min</td><td>After network changes</td></tr>
+<tr><td><strong>Pre-Training Readiness</strong></td><td>4+ suites</td><td>30-60 min</td><td>Before training jobs</td></tr>
+<tr><td><strong>GPU Burn-In</strong></td><td>4 suites</td><td>2-8 hours</td><td>New GPU, RMA replacement</td></tr>
+<tr><td><strong>Inference Readiness</strong></td><td>3 suites</td><td>15-30 min</td><td>Before inference deployment</td></tr>
+</tbody></table>
+
+<!-- FEATURE 10 -->
+<h2 id="f10">10. Canary-First Pattern <span class="tag tag-auto">Agent Auto &gt; 1 Node</span></h2>
+<table>
+<thead><tr><th>Cluster Size</th><th>Canary?</th><th>Agent Behavior</th></tr></thead>
+<tbody>
+<tr><td>1 node</td><td>No</td><td>Only one node — run directly</td></tr>
+<tr><td>2 nodes</td><td class="p"><strong>Auto</strong></td><td>Test node 1 first, then both</td></tr>
+<tr><td>4+ nodes</td><td class="p"><strong>Auto</strong></td><td>Test node 1 first, then full cluster</td></tr>
+<tr><td>64+ nodes</td><td class="p"><strong>Auto</strong></td><td>Test node 1 first, then full fleet</td></tr>
+</tbody></table>
+
+<!-- FEATURE 11 -->
+<h2 id="f11">11. Prompt-Injection Defense <span class="tag tag-always">Agent Always</span></h2>
+<div class="section">
+<p>All cluster output (stdout, stderr, log files) is treated as <strong>DATA</strong>. The agent never parses cluster output as instructions. Suspicious output is flagged to the user.</p>
+</div>
+
+<!-- FEATURE 12 -->
+<h2 id="f12">12. Persistent Result Storage <span class="tag tag-auto">Agent Auto Every Test</span></h2>
+<table>
+<thead><tr><th>Platform</th><th>Storage Path</th><th>How User Accesses</th></tr></thead>
+<tbody>
+<tr><td><strong>WSL</strong></td><td><code>C:\Users\&lt;you&gt;\Downloads\cvs_results\</code></td><td>Windows Explorer</td></tr>
+<tr><td><strong>Native Linux</strong></td><td><code>~/Downloads/cvs_results/</code></td><td>File manager or terminal</td></tr>
+<tr><td><strong>Custom</strong></td><td><code>$CVS_RESULTS_DIR</code></td><td>User-defined environment variable</td></tr>
+</tbody></table>
+
+<!-- FEATURE 13 -->
+<h2 id="f13">13. Auto-Install CVS <span class="tag tag-auto">Agent Auto</span></h2>
+<table>
+<thead><tr><th>Situation</th><th>Agent Action</th></tr></thead>
+<tbody>
+<tr><td>CVS installed, up to date</td><td class="p">Continue — note version</td></tr>
+<tr><td>CVS installed, newer available</td><td class="w">Inform: "v1.3 available, want to upgrade?"</td></tr>
+<tr><td>CVS <strong>not installed</strong></td><td class="p">Auto-install via <code>pip install cvs</code></td></tr>
+<tr><td>pip fails</td><td class="w">Fallback: clone from source, install in virtualenv</td></tr>
+</tbody></table>
+
+<!-- FEATURE 14 -->
+<h2 id="f14">14. Magic Prompt <span class="tag tag-user">User Triggers Once</span></h2>
+<h3>The 10-Step Automated Sequence</h3>
+<table>
+<thead><tr><th>Step</th><th>What Agent Does</th><th>Duration</th></tr></thead>
+<tbody>
+<tr><td><strong>1</strong></td><td>Save cluster profile locally</td><td>&lt; 1 sec</td></tr>
+<tr><td><strong>2</strong></td><td>SSH to head node, check CVS</td><td>5 sec</td></tr>
+<tr><td><strong>3</strong></td><td>Install CVS if missing</td><td>30-60 sec</td></tr>
+<tr><td><strong>4</strong></td><td>Set up SSH keys (head→self, head→workers)</td><td>10 sec</td></tr>
+<tr><td><strong>5</strong></td><td>Discover network interfaces</td><td>5 sec</td></tr>
+<tr><td><strong>6</strong></td><td>Discover RDMA hardware type</td><td>5 sec</td></tr>
+<tr><td><strong>7</strong></td><td>Verify Jira MCP connection</td><td>5 sec</td></tr>
+<tr><td><strong>8</strong></td><td>Run 9-point sanity check</td><td>30 sec</td></tr>
+<tr><td><strong>9</strong></td><td>Run preflight + platform health check</td><td>2-3 min</td></tr>
+<tr><td><strong>10</strong></td><td>Serve HTML report, present results</td><td>5 sec</td></tr>
+</tbody></table>
+<p><strong>Total: ~5 minutes from paste to first result.</strong></p>
+
+<!-- FEATURE 15 -->
+<h2 id="f15">15. 9-Point Sanity Check <span class="tag tag-auto">Agent Auto After Setup</span></h2>
+<table>
+<thead><tr><th>#</th><th>Check</th><th>What It Validates</th><th>If It Fails</th></tr></thead>
+<tbody>
+<tr><td><strong>1</strong></td><td>SSH to head node</td><td>Can agent reach the cluster?</td><td class="w">Fix SSH key or IP</td></tr>
+<tr><td><strong>2</strong></td><td>SSH head→self</td><td>Can CVS parallel-SSH work?</td><td class="w">Add key to own authorized_keys</td></tr>
+<tr><td><strong>3</strong></td><td>SSH head→worker(s)</td><td>Can CVS reach all nodes?</td><td class="w">Copy key to workers</td></tr>
+<tr><td><strong>4</strong></td><td>CVS installed</td><td>Is CVS on the head node?</td><td class="p">Auto-install</td></tr>
+<tr><td><strong>5</strong></td><td>Jira search</td><td>Can agent query Jira?</td><td class="w">Guide user to set up Atlassian MCP</td></tr>
+<tr><td><strong>6</strong></td><td>Jira create+close</td><td>Can agent create tickets?</td><td class="w">Check project permissions</td></tr>
+<tr><td><strong>7</strong></td><td>Confluence search</td><td>Can agent find documentation?</td><td style="color:#666">Non-critical — skip</td></tr>
+<tr><td><strong>8</strong></td><td>Network interface</td><td>What's the management interface?</td><td class="p">Auto-discover</td></tr>
+<tr><td><strong>9</strong></td><td>RDMA hardware</td><td>What NIC type (Mellanox/Broadcom)?</td><td class="p">Auto-discover</td></tr>
+</tbody></table>
+
+<!-- SUMMARY MATRIX -->
+<h2 id="matrix">Feature Summary Matrix</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>Who Decides</th><th>Saves Time</th><th>Reduces Errors</th><th>Enables Overnight</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><strong>Overnight Autonomous Mode</strong></td><td><span class="tag tag-user">User triggers</span></td><td>8+ hrs/night</td><td>Auto-heal fixes</td><td>Core feature</td></tr>
+<tr><td>2</td><td><strong>Jira Escalation</strong></td><td><span class="tag tag-auto">Agent auto</span></td><td>1-2 hrs/ticket</td><td>Complete diagnostics</td><td>Auto-creates tickets</td></tr>
+<tr><td>3</td><td><strong>Connection Resilience (tmux)</strong></td><td><span class="tag tag-auto">Agent auto &gt;5min</span></td><td>0-4 hrs/disconnect</td><td>No lost work</td><td>Enables unattended</td></tr>
+<tr><td>4</td><td><strong>First-Run Onboarding</strong></td><td><span class="tag tag-user">User once</span></td><td>30 min setup</td><td>No hardcoded creds</td><td>Stores profile</td></tr>
+<tr><td>5</td><td><strong>RCCL Pre-Run Validation</strong></td><td><span class="tag tag-auto">Agent auto</span></td><td>15-30 min</td><td>First-time success</td><td>Prevents night fails</td></tr>
+<tr><td>6</td><td><strong>Auto-Heal Playbook</strong></td><td><span class="tag tag-auto">Agent auto</span></td><td>5-30 min/fix</td><td>70%+ auto-resolved</td><td>Keeps pipeline going</td></tr>
+<tr><td>7</td><td><strong>Smart Single-Node</strong></td><td><span class="tag tag-auto">Agent auto</span></td><td>10 min confusion</td><td>No false negatives</td><td>Correct report</td></tr>
+<tr><td>8</td><td><strong>HTTP Report Delivery</strong></td><td><span class="tag tag-auto">Agent auto</span></td><td>2 min/report</td><td>Works everywhere</td><td>Reports served</td></tr>
+<tr><td>9</td><td><strong>Pre-Built Workflows</strong></td><td><span class="tag tag-user">User selects</span></td><td>30+ min/sequence</td><td>Nothing forgotten</td><td>One-command overnight</td></tr>
+<tr><td>10</td><td><strong>Canary-First Pattern</strong></td><td><span class="tag tag-auto">Agent auto &gt;1node</span></td><td>0-2 hours</td><td>Catches config early</td><td>Saves overnight time</td></tr>
+<tr><td>11</td><td><strong>Prompt-Injection Defense</strong></td><td><span class="tag tag-always">Agent always</span></td><td>N/A</td><td>Security</td><td>Safe overnight</td></tr>
+<tr><td>12</td><td><strong>Persistent Result Storage</strong></td><td><span class="tag tag-auto">Agent auto</span></td><td>Audit trail</td><td>Never lose results</td><td>Morning review</td></tr>
+<tr><td>13</td><td><strong>Auto-Install CVS</strong></td><td><span class="tag tag-auto">Agent auto</span></td><td>30 min install</td><td>Zero manual steps</td><td>Ready for overnight</td></tr>
+<tr><td>14</td><td><strong>Magic Prompt</strong></td><td><span class="tag tag-user">User once</span></td><td>5 min to result</td><td>Single entry point</td><td>Any team member</td></tr>
+<tr><td>15</td><td><strong>9-Point Sanity Check</strong></td><td><span class="tag tag-auto">Agent auto</span></td><td>30s to catch</td><td>Fail fast on perms</td><td>No 2 AM surprises</td></tr>
+</tbody></table>
+
+</div>
+
+<div class="ftr">
+CVS AI Agentic Solution v1.4.0 | <a href="https://github.com/phoenix-amd/cvs-ai-agentic-solution">GitHub</a> |
+<a href="sample_dashboard.html">Dashboard Demo</a> |
+<a href="https://github.com/phoenix-amd/cvs-ai-agentic-solution/blob/main/FEATURES.md">Markdown Version</a>
+</div>
+</body></html>

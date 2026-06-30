@@ -1,0 +1,71 @@
+{
+  "title": "Dell 300X MI300X Cluster Validation",
+  "timestamp": "2026-06-30 17:18:43",
+  "cluster_name": "dell300x-pla-u14 (Austin)",
+  "agent_version": "1.4.0",
+  "target_config": {
+    "rocm": "7.2.0",
+    "gpu_count": "8",
+    "gpu_type": "MI300X (gfx942)",
+    "os": "Ubuntu 22.04",
+    "rdma_interfaces": "mlx5_0,mlx5_1,mlx5_2,mlx5_3,mlx5_4,mlx5_6,mlx5_7,mlx5_8"
+  },
+  "nodes": {
+    "10.194.129.213": {
+      "hostname": "dell300x-pla-u14-27",
+      "role": "head",
+      "ssh_ok": true,
+      "bmc_ok": null,
+      "rocm": "7.2.0",
+      "gpu_count": "8",
+      "gpu_type": "MI300X (gfx942)",
+      "os": "Ubuntu 22.04",
+      "rdma_status": "ACTIVE",
+      "mismatches": ["mlx5_5 DOWN/DISABLED"]
+    },
+    "10.194.129.211": {
+      "hostname": "dell300x-pla-u14-28",
+      "role": "worker",
+      "ssh_ok": true,
+      "bmc_ok": null,
+      "rocm": "7.2.0",
+      "gpu_count": "8",
+      "gpu_type": "MI300X (gfx942)",
+      "os": "Ubuntu 22.04",
+      "rdma_status": "ACTIVE",
+      "mismatches": ["mlx5_5 DOWN/DISABLED"]
+    }
+  },
+  "test_results": [
+    {"suite": "preflight_checks", "test": "test_node_reachability",          "node": "all",            "status": "PASS", "detail": "SSH reachable: 10.194.129.213, 10.194.129.211", "duration": "2.1s"},
+    {"suite": "preflight_checks", "test": "test_rocm_version_consistency",   "node": "all",            "status": "PASS", "detail": "ROCm 7.2.0 on all nodes",                    "duration": "3.4s"},
+    {"suite": "preflight_checks", "test": "test_rdma_interfaces",            "node": "all",            "status": "PASS", "detail": "8/9 interfaces active; mlx5_5 DOWN (excluded)", "duration": "4.1s"},
+    {"suite": "preflight_checks", "test": "test_gid_index_consistency",      "node": "all",            "status": "PASS", "detail": "GID index 3 consistent across nodes",         "duration": "2.8s"},
+    {"suite": "preflight_checks", "test": "test_rdma_connectivity",          "node": "all",            "status": "PASS", "detail": "128/162 pairs OK; 34 pairs skipped (mlx5_5)", "duration": "18.2s"},
+    {"suite": "preflight_checks", "test": "test_interface_name_consistency", "node": "all",            "status": "FAIL", "detail": "CVS bug: TypeError in report.py:281 (upstream)", "duration": "1.2s"},
+    {"suite": "preflight_checks", "test": "test_generate_preflight_report",  "node": "all",            "status": "FAIL", "detail": "Cascaded from test_interface_name_consistency CVS bug", "duration": "0.3s"},
+    {"suite": "rccl_perf",        "test": "test_collect_hostinfo",           "node": "all",            "status": "PASS", "detail": "Host info collected",                         "duration": "3.0s"},
+    {"suite": "rccl_perf",        "test": "test_collect_networkinfo",        "node": "all",            "status": "PASS", "detail": "Network info collected",                      "duration": "2.5s"},
+    {"suite": "rccl_perf",        "test": "test_disable_firewall",           "node": "all",            "status": "PASS", "detail": "Firewall disabled on all nodes",               "duration": "1.8s"},
+    {"suite": "rccl_perf",        "test": "test_print_env_once",             "node": "all",            "status": "PASS", "detail": "Environment printed",                         "duration": "0.9s"},
+    {"suite": "rccl_perf",        "test": "test_rccl_perf all_reduce",       "node": "all",            "status": "PASS", "detail": "Avg BusBW 52.36 GB/s; peak ~108 GB/s at 8GB", "duration": "187.0s"},
+    {"suite": "rccl_perf",        "test": "test_rccl_perf all_gather",       "node": "all",            "status": "PASS", "detail": "Avg BusBW 41.69 GB/s",                        "duration": "94.0s"},
+    {"suite": "rccl_perf",        "test": "test_rccl_perf scatter",          "node": "all",            "status": "PASS", "detail": "Avg BusBW 95.67 GB/s",                        "duration": "89.0s"}
+  ],
+  "rccl_results": [
+    {"size": "1 KB",  "algbw_oop": "0.00",  "busbw_oop": "0.00",   "algbw_ip": "0.00",  "busbw_ip": "0.00",  "errors": 0},
+    {"size": "4 KB",  "algbw_oop": "0.01",  "busbw_oop": "0.01",   "algbw_ip": "0.01",  "busbw_ip": "0.01",  "errors": 0},
+    {"size": "16 KB", "algbw_oop": "0.04",  "busbw_oop": "0.07",   "algbw_ip": "0.04",  "busbw_ip": "0.07",  "errors": 0},
+    {"size": "64 KB", "algbw_oop": "0.15",  "busbw_oop": "0.28",   "algbw_ip": "0.15",  "busbw_ip": "0.28",  "errors": 0},
+    {"size": "256 KB","algbw_oop": "0.58",  "busbw_oop": "1.09",   "algbw_ip": "0.58",  "busbw_ip": "1.09",  "errors": 0},
+    {"size": "1 MB",  "algbw_oop": "2.26",  "busbw_oop": "4.24",   "algbw_ip": "2.26",  "busbw_ip": "4.24",  "errors": 0},
+    {"size": "4 MB",  "algbw_oop": "8.43",  "busbw_oop": "15.81",  "algbw_ip": "8.43",  "busbw_ip": "15.81", "errors": 0},
+    {"size": "16 MB", "algbw_oop": "25.10", "busbw_oop": "47.07",  "algbw_ip": "25.10", "busbw_ip": "47.07", "errors": 0},
+    {"size": "64 MB", "algbw_oop": "35.48", "busbw_oop": "66.52",  "algbw_ip": "35.48", "busbw_ip": "66.52", "errors": 0},
+    {"size": "256 MB","algbw_oop": "41.20", "busbw_oop": "77.25",  "algbw_ip": "41.20", "busbw_ip": "77.25", "errors": 0},
+    {"size": "1 GB",  "algbw_oop": "46.33", "busbw_oop": "86.88",  "algbw_ip": "46.33", "busbw_ip": "86.88", "errors": 0},
+    {"size": "4 GB",  "algbw_oop": "52.18", "busbw_oop": "97.83",  "algbw_ip": "52.18", "busbw_ip": "97.83", "errors": 0},
+    {"size": "8 GB",  "algbw_oop": "57.95", "busbw_oop": "108.65", "algbw_ip": "57.95", "busbw_ip": "108.65","errors": 0},
+    {"size": "16 GB", "algbw_oop": "57.97", "busbw_oop": "108.70", "algbw_ip": "57.97", "busbw_ip": "108.70","errors": 0}
+  ]
+}

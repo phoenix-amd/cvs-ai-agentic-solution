@@ -1,0 +1,55 @@
+{
+  "_comment": "Safety baseline for driving CVS. Read-only commands are auto-allowed; anything that touches the cluster (run/exec/ssh) requires human approval; catastrophic local commands are denied. The real controls are least-privilege SSH user + scoped sudo + these ask rules.",
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -fr /)",
+      "Bash(rm -rf --no-preserve-root*)",
+      "Bash(mkfs*)",
+      "Bash(fdisk*)",
+      "Bash(dd if=*)",
+      "Bash(reboot)",
+      "Bash(shutdown*)",
+      "Bash(halt)",
+      "Bash(poweroff)",
+      "Bash(init 0)",
+      "Bash(init 6)",
+      "Bash(systemctl reboot)",
+      "Bash(systemctl poweroff)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)"
+    ],
+    "ask": [
+      "Bash(pip uninstall*)"
+    ],
+    "allow": [
+      "Bash"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-edit.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/safety-guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

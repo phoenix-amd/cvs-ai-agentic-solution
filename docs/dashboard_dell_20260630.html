@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dell 300X MI300X Cluster Validation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0d1a;color:#ddd;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#12122a,#1a1a3a);padding:16px 32px;border-bottom:3px solid #ed1c24;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.hdr h1{font-size:22px;color:#fff}.hdr .sub{color:#777;font-size:12px}
+.hdr .tags{display:flex;gap:16px;flex-wrap:wrap}.hdr .tags span{font-size:12px;color:#666}.hdr .tags b{color:#00c896}
+.tabs{display:flex;background:#111128;border-bottom:1px solid #252540;padding:0 32px;overflow-x:auto}
+.tab{padding:12px 20px;cursor:pointer;color:#666;font-size:13px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;transition:.2s}
+.tab:hover{color:#fff;background:#1a1a30}.tab.a{color:#ed1c24;border-color:#ed1c24}
+.cnt{padding:20px 32px}.pnl{display:none}.pnl.a{display:block}
+.cds{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.cd{background:#161630;border-radius:8px;padding:16px;border-top:3px solid #ed1c24;text-align:center}
+.cd .vl{font-size:28px;font-weight:800}.cd .lb{font-size:11px;color:#777;margin-top:4px}
+.cd.g .vl{color:#00c896}.cd.r .vl{color:#ff5555}.cd.b .vl{color:#4488ff}.cd.o .vl{color:#ff8c00}
+.gauges{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:20px 0;padding:20px;background:#161630;border-radius:8px}
+.stl{font-size:17px;color:#fff;margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid #252540}
+table{width:100%;border-collapse:collapse;background:#161630;border-radius:8px;overflow:hidden;margin-bottom:16px}
+thead th{background:#1e1e38;color:#bbb;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;z-index:1}
+td{padding:8px 12px;border-bottom:1px solid #1e1e30;font-size:12px}
+tr:hover{background:#1a1a35}.ip{font-weight:700;color:#4488ff}.hd{color:#ff8c00;font-weight:700}
+.p{color:#00c896;font-weight:600}.f{color:#ff5555;font-weight:600}.w{color:#ff8c00;font-weight:600}
+.v{color:#bbb}.exp{color:#ff8888;font-size:10px}.bw{color:#00c896;font-weight:700}.dtl{max-width:300px}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700}
+.badge.p{background:#0a2a15;color:#00c896}.badge.f{background:#2a0a0a;color:#ff5555}
+.flt{display:flex;gap:10px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.flt input,.flt select{background:#1a1a30;border:1px solid #333;color:#fff;padding:7px 12px;border-radius:6px;font-size:12px}
+.flt input{width:240px}
+.brow{display:flex;align-items:center;gap:8px;margin:3px 0}
+.bl{min-width:70px;font-size:11px;color:#777;text-align:right}
+.btrack{flex:1;height:20px;background:#1a1a30;border-radius:4px;overflow:hidden}
+.bfill{height:100%;background:linear-gradient(90deg,#00a85a,#00e6aa);border-radius:4px;transition:width .6s}
+.bv{min-width:80px;font-size:11px;color:#00c896;font-weight:600}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;margin:16px 0}
+.scard{display:flex;align-items:center;gap:10px;background:#161630;padding:10px 14px;border-radius:6px;border-left:3px solid #333}
+.scard.sp{border-color:#00c896}.scard.sf{border-color:#ff5555}
+.scard .sname{flex:1;font-size:12px;color:#bbb}.scard .sst{font-size:11px;font-weight:700}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.dot.g{background:#00c896}.dot.r{background:#ff5555}.dot.y{background:#ff8c00}
+.ftr{text-align:center;padding:16px;color:#444;font-size:11px;border-top:1px solid #1a1a30;margin-top:30px}.ftr a{color:#4488ff}
+@media(max-width:768px){.cnt{padding:12px}.cds{grid-template-columns:1fr 1fr}}
+</style></head><body>
+
+<div class="hdr">
+<div><h1>Dell 300X MI300X Cluster Validation</h1><div class="sub">CVS AI Agentic Solution — Cluster Validation Dashboard</div></div>
+<div class="tags">
+<span>Cluster: <b>dell300x-pla-u14 (Austin)</b></span><span>Nodes: <b>2</b></span>
+<span>GPUs: <b>16</b></span><span>Agent: <b>v1.4.0</b></span><span>2026-06-30 17:18:43</span>
+</div></div>
+
+<div class="tabs">
+<div class="tab a" onclick="sp('ov',this)">Overview</div>
+<div class="tab" onclick="sp('nd',this)">Nodes (2)</div>
+<div class="tab" onclick="sp('ts',this)">Tests (12/14)</div>
+<div class="tab" onclick="sp('rc',this)">RCCL Performance</div>
+<div class="tab" onclick="sp('hw',this)">Hardware Detail</div>
+</div>
+
+<div class="cnt">
+
+<!-- OVERVIEW -->
+<div id="ov" class="pnl a">
+<div class="cds">
+<div class="cd b"><div class="vl">2</div><div class="lb">Cluster Nodes</div></div>
+<div class="cd b"><div class="vl">16</div><div class="lb">Total GPUs</div></div>
+<div class="cd g"><div class="vl">12</div><div class="lb">Tests Passed</div></div>
+<div class="cd r"><div class="vl">2</div><div class="lb">Tests Failed</div></div>
+<div class="cd o"><div class="vl">14</div><div class="lb">Total Tests</div></div>
+<div class="cd g"><div class="vl">85%</div><div class="lb">Pass Rate</div></div>
+</div>
+<div class="gauges">
+<div style="text-align:center">
+        <svg width="120" height="120" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a3a" stroke-width="8"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#00c896" stroke-width="8"
+                stroke-dasharray="213.35 251" stroke-dashoffset="0"
+                transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <text x="50" y="46" text-anchor="middle" fill="#00c896" font-size="18" font-weight="700">85</text>
+            <text x="50" y="60" text-anchor="middle" fill="#888" font-size="9">%</text>
+        </svg>
+        <div style="color:#aaa;font-size:11px;margin-top:-5px">Pass Rate</div>
+    </div>
+<div style="text-align:center">
+        <svg width="120" height="120" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a3a" stroke-width="8"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#ff5555" stroke-width="8"
+                stroke-dasharray="62.74999999999999 251" stroke-dashoffset="0"
+                transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <text x="50" y="46" text-anchor="middle" fill="#ff5555" font-size="18" font-weight="700">2</text>
+            <text x="50" y="60" text-anchor="middle" fill="#888" font-size="9">nodes</text>
+        </svg>
+        <div style="color:#aaa;font-size:11px;margin-top:-5px">Nodes Online</div>
+    </div>
+<div style="text-align:center">
+        <svg width="120" height="120" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a3a" stroke-width="8"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#00c896" stroke-width="8"
+                stroke-dasharray="250.99999999999997 251" stroke-dashoffset="0"
+                transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <text x="50" y="46" text-anchor="middle" fill="#00c896" font-size="18" font-weight="700">16</text>
+            <text x="50" y="60" text-anchor="middle" fill="#888" font-size="9">GPUs</text>
+        </svg>
+        <div style="color:#aaa;font-size:11px;margin-top:-5px">GPUs Active</div>
+    </div>
+<div style="text-align:center">
+        <svg width="120" height="120" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a3a" stroke-width="8"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#ff8c00" stroke-width="8"
+                stroke-dasharray="135.54 251" stroke-dashoffset="0"
+                transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <text x="50" y="46" text-anchor="middle" fill="#ff8c00" font-size="18" font-weight="700">108</text>
+            <text x="50" y="60" text-anchor="middle" fill="#888" font-size="9">GB/s</text>
+        </svg>
+        <div style="color:#aaa;font-size:11px;margin-top:-5px">Peak BusBW</div>
+    </div>
+<div style="text-align:center">
+        <svg width="120" height="120" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a3a" stroke-width="8"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#ff5555" stroke-width="8"
+                stroke-dasharray="53.964999999999996 251" stroke-dashoffset="0"
+                transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <text x="50" y="46" text-anchor="middle" fill="#ff5555" font-size="18" font-weight="700">43</text>
+            <text x="50" y="60" text-anchor="middle" fill="#888" font-size="9">GB/s</text>
+        </svg>
+        <div style="color:#aaa;font-size:11px;margin-top:-5px">Avg BusBW</div>
+    </div>
+<div style="text-align:center">
+        <svg width="120" height="120" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a3a" stroke-width="8"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#00c896" stroke-width="8"
+                stroke-dasharray="215.1428571428571 251" stroke-dashoffset="0"
+                transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <text x="50" y="46" text-anchor="middle" fill="#00c896" font-size="18" font-weight="700">12</text>
+            <text x="50" y="60" text-anchor="middle" fill="#888" font-size="9">12/14</text>
+        </svg>
+        <div style="color:#aaa;font-size:11px;margin-top:-5px">Health Score</div>
+    </div>
+</div>
+<h3 class="stl">Test Results</h3>
+<div class="sgrid"><div class="scard sp"><span class="sname">test_node_reachability</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_rocm_version_consistency</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_rdma_interfaces</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_gid_index_consistency</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_rdma_connectivity</span><span class="sst p">PASS</span></div><div class="scard sf"><span class="sname">test_interface_name_consistency</span><span class="sst f">FAIL</span></div><div class="scard sf"><span class="sname">test_generate_preflight_report</span><span class="sst f">FAIL</span></div><div class="scard sp"><span class="sname">test_collect_hostinfo</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_collect_networkinfo</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_disable_firewall</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_print_env_once</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_rccl_perf all_reduce</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_rccl_perf all_gather</span><span class="sst p">PASS</span></div><div class="scard sp"><span class="sname">test_rccl_perf scatter</span><span class="sst p">PASS</span></div></div>
+<h3 class="stl">Target Configuration (BKC)</h3>
+<table><thead><tr><th>Property</th><th>Expected Value</th></tr></thead><tbody><tr><td class="v">rocm</td><td class="p">7.2.0</td></tr><tr><td class="v">gpu_count</td><td class="p">8</td></tr><tr><td class="v">gpu_type</td><td class="p">MI300X (gfx942)</td></tr><tr><td class="v">os</td><td class="p">Ubuntu 22.04</td></tr><tr><td class="v">rdma_interfaces</td><td class="p">mlx5_0,mlx5_1,mlx5_2,mlx5_3,mlx5_4,mlx5_6,mlx5_7,mlx5_8</td></tr></tbody></table>
+</div>
+
+<!-- NODES -->
+<div id="nd" class="pnl">
+<h3 class="stl">Per-Node Comparison — Software & Configuration</h3>
+<div class="flt"><input placeholder="Filter nodes..." onkeyup="ft('nt',this.value)"></div>
+<div style="overflow-x:auto"><table id="nt"><thead><tr>
+<th>IP</th><th>Hostname</th><th>Role</th><th>SSH</th><th>BKC</th><th>OS</th><th>Kernel</th>
+<th>BIOS</th><th>ROCm</th><th>amdgpu Drv</th><th>GPUs</th><th>GPU Type</th><th>Memory</th>
+<th>Serial</th><th>Platform</th><th>Product</th><th>CPU</th><th>Threads</th><th>NUMA</th>
+<th>Kernel Cmdline</th><th>ACS</th><th>NIC Vendor</th><th>NIC P/N</th><th>NIC FW</th>
+<th>NIC Driver</th><th>BE Switch</th><th>Switch Type</th><th>BMC IP</th><th>BMC FW</th>
+<th>RDMA</th><th>Status</th>
+</tr></thead><tbody><tr>
+            <td class="ip">10.194.129.213</td>
+            <td class="v">dell300x-pla-u14-27</td>
+            <td class="hd">HEAD</td>
+            <td class="v"><span class="dot g"></span> UP</td>
+            <td class="v">N/A</td>
+            <td class="p">Ubuntu 22.04</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="p">7.2.0</td>
+            <td class="v">N/A</td>
+            <td class="p">8</td>
+            <td class="v">MI300X (gfx942)</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="f">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="p">ACTIVE</td>
+            <td><span class="badge f">1 issues</span></td>
+        </tr><tr>
+            <td class="ip">10.194.129.211</td>
+            <td class="v">dell300x-pla-u14-28</td>
+            <td class="v">WORKER</td>
+            <td class="v"><span class="dot g"></span> UP</td>
+            <td class="v">N/A</td>
+            <td class="p">Ubuntu 22.04</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="p">7.2.0</td>
+            <td class="v">N/A</td>
+            <td class="p">8</td>
+            <td class="v">MI300X (gfx942)</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="f">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="v">N/A</td>
+            <td class="p">ACTIVE</td>
+            <td><span class="badge f">1 issues</span></td>
+        </tr></tbody></table></div>
+</div>
+
+<!-- TESTS -->
+<div id="ts" class="pnl">
+<h3 class="stl">Detailed Test Results</h3>
+<div class="flt">
+<input placeholder="Filter tests..." onkeyup="ft('tt',this.value)">
+<select onchange="fs('tt',this.value)"><option value="">All</option><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select>
+</div>
+<table id="tt"><thead><tr><th>Suite</th><th>Test</th><th>Node</th><th>Status</th><th>Detail</th><th>Duration</th></tr></thead>
+<tbody><tr>
+            <td class="v">preflight_checks</td><td class="v">test_node_reachability</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">SSH reachable: 10.194.129.213, 10.194.129.211</td><td class="v">2.1s</td>
+        </tr><tr>
+            <td class="v">preflight_checks</td><td class="v">test_rocm_version_consistency</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">ROCm 7.2.0 on all nodes</td><td class="v">3.4s</td>
+        </tr><tr>
+            <td class="v">preflight_checks</td><td class="v">test_rdma_interfaces</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">8/9 interfaces active; mlx5_5 DOWN (excluded)</td><td class="v">4.1s</td>
+        </tr><tr>
+            <td class="v">preflight_checks</td><td class="v">test_gid_index_consistency</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">GID index 3 consistent across nodes</td><td class="v">2.8s</td>
+        </tr><tr>
+            <td class="v">preflight_checks</td><td class="v">test_rdma_connectivity</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">128/162 pairs OK; 34 pairs skipped (mlx5_5)</td><td class="v">18.2s</td>
+        </tr><tr>
+            <td class="v">preflight_checks</td><td class="v">test_interface_name_consistency</td>
+            <td class="v">all</td><td class="f"><span class="badge f">FAIL</span></td>
+            <td class="v dtl">CVS bug: TypeError in report.py:281 (upstream)</td><td class="v">1.2s</td>
+        </tr><tr>
+            <td class="v">preflight_checks</td><td class="v">test_generate_preflight_report</td>
+            <td class="v">all</td><td class="f"><span class="badge f">FAIL</span></td>
+            <td class="v dtl">Cascaded from test_interface_name_consistency CVS bug</td><td class="v">0.3s</td>
+        </tr><tr>
+            <td class="v">rccl_perf</td><td class="v">test_collect_hostinfo</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">Host info collected</td><td class="v">3.0s</td>
+        </tr><tr>
+            <td class="v">rccl_perf</td><td class="v">test_collect_networkinfo</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">Network info collected</td><td class="v">2.5s</td>
+        </tr><tr>
+            <td class="v">rccl_perf</td><td class="v">test_disable_firewall</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">Firewall disabled on all nodes</td><td class="v">1.8s</td>
+        </tr><tr>
+            <td class="v">rccl_perf</td><td class="v">test_print_env_once</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">Environment printed</td><td class="v">0.9s</td>
+        </tr><tr>
+            <td class="v">rccl_perf</td><td class="v">test_rccl_perf all_reduce</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">Avg BusBW 52.36 GB/s; peak ~108 GB/s at 8GB</td><td class="v">187.0s</td>
+        </tr><tr>
+            <td class="v">rccl_perf</td><td class="v">test_rccl_perf all_gather</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">Avg BusBW 41.69 GB/s</td><td class="v">94.0s</td>
+        </tr><tr>
+            <td class="v">rccl_perf</td><td class="v">test_rccl_perf scatter</td>
+            <td class="v">all</td><td class="p"><span class="badge p">PASS</span></td>
+            <td class="v dtl">Avg BusBW 95.67 GB/s</td><td class="v">89.0s</td>
+        </tr></tbody></table>
+</div>
+
+<!-- RCCL -->
+<div id="rc" class="pnl">
+<h3 class="stl">RCCL Collective Performance</h3>
+
+<div class="cds" style="margin-bottom:20px">
+<div class="cd g"><div class="vl">108.7</div><div class="lb">Peak BusBW (GB/s)</div></div>
+<div class="cd b"><div class="vl">43.9</div><div class="lb">Avg BusBW (GB/s)</div></div>
+<div class="cd g"><div class="vl">0</div><div class="lb">Total Errors</div></div>
+<div class="cd o"><div class="vl">14</div><div class="lb">Message Sizes</div></div>
+</div>
+<h3 class="stl">Bandwidth by Message Size</h3>
+<div style="max-width:700px;margin-bottom:20px"><div class="brow"><span class="bl">1 KB</span>
+            <div class="btrack"><div class="bfill" style="width:0%"></div></div>
+            <span class="bv">0.00 GB/s</span></div><div class="brow"><span class="bl">4 KB</span>
+            <div class="btrack"><div class="bfill" style="width:0%"></div></div>
+            <span class="bv">0.01 GB/s</span></div><div class="brow"><span class="bl">16 KB</span>
+            <div class="btrack"><div class="bfill" style="width:0%"></div></div>
+            <span class="bv">0.07 GB/s</span></div><div class="brow"><span class="bl">64 KB</span>
+            <div class="btrack"><div class="bfill" style="width:0%"></div></div>
+            <span class="bv">0.28 GB/s</span></div><div class="brow"><span class="bl">256 KB</span>
+            <div class="btrack"><div class="bfill" style="width:1%"></div></div>
+            <span class="bv">1.09 GB/s</span></div><div class="brow"><span class="bl">1 MB</span>
+            <div class="btrack"><div class="bfill" style="width:3%"></div></div>
+            <span class="bv">4.24 GB/s</span></div><div class="brow"><span class="bl">4 MB</span>
+            <div class="btrack"><div class="bfill" style="width:14%"></div></div>
+            <span class="bv">15.81 GB/s</span></div><div class="brow"><span class="bl">16 MB</span>
+            <div class="btrack"><div class="bfill" style="width:43%"></div></div>
+            <span class="bv">47.07 GB/s</span></div><div class="brow"><span class="bl">64 MB</span>
+            <div class="btrack"><div class="bfill" style="width:61%"></div></div>
+            <span class="bv">66.52 GB/s</span></div><div class="brow"><span class="bl">256 MB</span>
+            <div class="btrack"><div class="bfill" style="width:71%"></div></div>
+            <span class="bv">77.25 GB/s</span></div><div class="brow"><span class="bl">1 GB</span>
+            <div class="btrack"><div class="bfill" style="width:79%"></div></div>
+            <span class="bv">86.88 GB/s</span></div><div class="brow"><span class="bl">4 GB</span>
+            <div class="btrack"><div class="bfill" style="width:89%"></div></div>
+            <span class="bv">97.83 GB/s</span></div><div class="brow"><span class="bl">8 GB</span>
+            <div class="btrack"><div class="bfill" style="width:99%"></div></div>
+            <span class="bv">108.65 GB/s</span></div><div class="brow"><span class="bl">16 GB</span>
+            <div class="btrack"><div class="bfill" style="width:100%"></div></div>
+            <span class="bv">108.70 GB/s</span></div></div>
+<h3 class="stl">Detailed Results</h3>
+<table><thead><tr><th>Size</th><th>AlgBW OOP (GB/s)</th><th>BusBW OOP (GB/s)</th><th>AlgBW IP (GB/s)</th><th>BusBW IP (GB/s)</th><th>#Wrong</th></tr></thead>
+<tbody><tr><td class="v">1 KB</td><td class="v">0.00</td>
+            <td class="v bw">0.00</td><td class="v">0.00</td>
+            <td class="v bw">0.00</td><td class="p">0</td></tr><tr><td class="v">4 KB</td><td class="v">0.01</td>
+            <td class="v bw">0.01</td><td class="v">0.01</td>
+            <td class="v bw">0.01</td><td class="p">0</td></tr><tr><td class="v">16 KB</td><td class="v">0.04</td>
+            <td class="v bw">0.07</td><td class="v">0.04</td>
+            <td class="v bw">0.07</td><td class="p">0</td></tr><tr><td class="v">64 KB</td><td class="v">0.15</td>
+            <td class="v bw">0.28</td><td class="v">0.15</td>
+            <td class="v bw">0.28</td><td class="p">0</td></tr><tr><td class="v">256 KB</td><td class="v">0.58</td>
+            <td class="v bw">1.09</td><td class="v">0.58</td>
+            <td class="v bw">1.09</td><td class="p">0</td></tr><tr><td class="v">1 MB</td><td class="v">2.26</td>
+            <td class="v bw">4.24</td><td class="v">2.26</td>
+            <td class="v bw">4.24</td><td class="p">0</td></tr><tr><td class="v">4 MB</td><td class="v">8.43</td>
+            <td class="v bw">15.81</td><td class="v">8.43</td>
+            <td class="v bw">15.81</td><td class="p">0</td></tr><tr><td class="v">16 MB</td><td class="v">25.10</td>
+            <td class="v bw">47.07</td><td class="v">25.10</td>
+            <td class="v bw">47.07</td><td class="p">0</td></tr><tr><td class="v">64 MB</td><td class="v">35.48</td>
+            <td class="v bw">66.52</td><td class="v">35.48</td>
+            <td class="v bw">66.52</td><td class="p">0</td></tr><tr><td class="v">256 MB</td><td class="v">41.20</td>
+            <td class="v bw">77.25</td><td class="v">41.20</td>
+            <td class="v bw">77.25</td><td class="p">0</td></tr><tr><td class="v">1 GB</td><td class="v">46.33</td>
+            <td class="v bw">86.88</td><td class="v">46.33</td>
+            <td class="v bw">86.88</td><td class="p">0</td></tr><tr><td class="v">4 GB</td><td class="v">52.18</td>
+            <td class="v bw">97.83</td><td class="v">52.18</td>
+            <td class="v bw">97.83</td><td class="p">0</td></tr><tr><td class="v">8 GB</td><td class="v">57.95</td>
+            <td class="v bw">108.65</td><td class="v">57.95</td>
+            <td class="v bw">108.65</td><td class="p">0</td></tr><tr><td class="v">16 GB</td><td class="v">57.97</td>
+            <td class="v bw">108.70</td><td class="v">57.97</td>
+            <td class="v bw">108.70</td><td class="p">0</td></tr></tbody></table>
+</div>
+
+<!-- HARDWARE DETAIL -->
+<div id="hw" class="pnl">
+<h3 class="stl">Hardware Inventory</h3>
+<table><thead><tr><th>IP</th><th>Hostname</th><th>Serial</th><th>Platform</th><th>Product</th>
+<th>CPU</th><th>Threads</th><th>NUMA</th><th>Memory</th><th>GPUs</th><th>GPU Type</th>
+<th>NIC Vendor</th><th>NIC P/N</th><th>NIC FW</th><th>NIC Driver</th>
+<th>BE Switch</th><th>BMC IP</th><th>BMC FW</th><th>BKC</th></tr></thead>
+<tbody><tr>
+<td class="ip">10.194.129.213</td><td class="v">dell300x-pla-u14-27</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">8</td>
+<td class="v">MI300X (gfx942)</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td></tr><tr>
+<td class="ip">10.194.129.211</td><td class="v">dell300x-pla-u14-28</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">8</td>
+<td class="v">MI300X (gfx942)</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td><td class="v">N/A</td>
+<td class="v">N/A</td></tr></tbody></table>
+</div>
+
+</div>
+
+<div class="ftr">CVS AI Agentic Solution v1.4.0 | 2026-06-30 17:18:43 | <a href="https://github.com/phoenix-amd/cvs-ai-agentic-solution">GitHub</a></div>
+
+<script>
+function sp(id,el){document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('a'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('a'));document.getElementById(id).classList.add('a');el.classList.add('a')}
+function ft(tid,q){document.getElementById(tid).querySelectorAll('tbody tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'})}
+function fs(tid,s){document.getElementById(tid).querySelectorAll('tbody tr').forEach(r=>{if(!s){r.style.display='';return}r.style.display=Array.from(r.querySelectorAll('td')).some(c=>c.textContent.trim()===s)?'':'none'})}
+</script></body></html>
