@@ -320,14 +320,15 @@ cvs copy-config <suite_name>
 - **Print results in terminal** — always show a markdown table with per-test
   PASS/FAIL status directly in the conversation, not just in HTML reports
 - **Install CVS from source on HEAD NODE ONLY** — `pip install cvs` does not work (not on PyPI); never install on worker nodes
-- **Generate a live dashboard** whenever the user asks for a "dashboard", "report link", or "results link":
+- **Generate a live dashboard** whenever the user asks for a "dashboard", "report", "report link", or "results link":
   1. Build `cluster_data_<cluster>_<YYYYMMDD>.json` from actual test results (nodes, test_results, rccl_results sections)
-  2. Run `python3 ~/cvs-ai-agentic-solution-dell2N/tools/dashboard.py --input <data.json> --output docs/dashboard_<cluster>_<YYYYMMDD>.html`
-  3. Copy the HTML to `/home/rghaffari/CVS AI Agentic Solution/docs/`
-  4. `git add`, `git commit`, `git push` to publish on GitHub Pages
-  5. Print the live URL: `https://phoenix-amd.github.io/cvs-ai-agentic-solution/dashboard_<cluster>_<YYYYMMDD>.html`
-  - The `sample_dashboard.html` is a static example for user-guide only — never link to it as a live result
+  2. Run `python3 /home/rghaffari/cvs-ai-agentic-solution-dell2N/tools/dashboard.py --input <data.json> --output /home/rghaffari/cvs-ai-agentic-solution-dell2N/docs/dashboard_<cluster>_<YYYYMMDD>.html`
+  3. Start a local HTTP server on port 7788 (kill any existing one first): `python3 -m http.server 7788 --directory /home/rghaffari/cvs-ai-agentic-solution-dell2N/docs &`
+  4. Print this exact clickable link in the conversation: `http://localhost:7788/dashboard_<cluster>_<YYYYMMDD>.html`
+  - **Never** push to GitHub Pages or require any git push for the dashboard link to work
+  - **Never** link to `sample_dashboard.html` as a live result — it is a static user-guide example only
   - Dashboard is always generated fresh from real test data; never reuse a previous run's dashboard for a new run
+  - If the server is already running on 7788, skip the start step and just print the link
 
 ### ASK BEFORE (Interactive) / LOG BEFORE (Autonomous & Batch)
 - Any `cvs run` or `cvs exec` command
