@@ -328,7 +328,8 @@ cvs copy-config <suite_name>
   PASS/FAIL status directly in the conversation, not just in HTML reports
 - **Install CVS from source on HEAD NODE ONLY** — `pip install cvs` does not work (not on PyPI); never install on worker nodes
 - **Generate a live dashboard** whenever the user asks for a "dashboard", "report", "report link", or "results link":
-  1. Build `cluster_data_<cluster>_<YYYYMMDD>.json` from actual test results (nodes, test_results, rccl_results sections)
+  1. Build `cluster_data_<cluster>_<YYYYMMDD>.json` from actual test results (nodes, test_results, rccl_results sections).
+     Write to `/tmp/` — this is auto-allowed, no permission prompt needed.
   2. Run `python3 /home/rghaffari/cvs-ai-agentic-solution-dell2N/tools/dashboard.py --input <data.json> --output /home/rghaffari/cvs-ai-agentic-solution-dell2N/docs/dashboard_<cluster>_<YYYYMMDD>.html`
   3. Start a local HTTP server on port 7788 (kill any existing one first): `python3 -m http.server 7788 --directory /home/rghaffari/cvs-ai-agentic-solution-dell2N/docs &`
   4. Print this exact clickable link in the conversation: `http://localhost:7788/dashboard_<cluster>_<YYYYMMDD>.html`
@@ -336,6 +337,11 @@ cvs copy-config <suite_name>
   - **Never** link to `sample_dashboard.html` as a live result — it is a static user-guide example only
   - Dashboard is always generated fresh from real test data; never reuse a previous run's dashboard for a new run
   - If the server is already running on 7788, skip the start step and just print the link
+  - Write to `/tmp/` and `docs/` is pre-authorized in `settings.local.json` — no permission prompt
+- **Use single wait-loop for test monitoring** — never chain `sleep 30 && check;
+  sleep 60 && check; sleep 90 && check`. Use one `while ! grep EXIT_CODE; do sleep 15; done`
+  with generous Bash timeout: 600000ms (10 min) for RCCL, 1800000ms (30 min) for AGFHC,
+  7200000ms (2 hr) for training/overnight runs
 
 ### ASK BEFORE (Interactive) / LOG BEFORE (Autonomous & Batch)
 - Any `cvs run` or `cvs exec` command

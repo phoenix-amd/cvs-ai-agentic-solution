@@ -961,6 +961,26 @@ expected duration. The user never needs to say "use tmux" — the agent does it.
 Tell the user: "This test will take ~X minutes. Wrapping in tmux so it
 survives if your connection drops. You can safely disconnect."
 
+### Monitoring Long-Running Tests (MANDATORY — No Sleep Polling)
+
+**Never** monitor tests using chained `sleep` calls (`sleep 30 && check;
+sleep 60 && check; sleep 90 && check`). Instead, use a **single blocking
+wait-loop** with an appropriate timeout:
+
+```bash
+# CORRECT — single wait-loop
+cssh <headnode> 'while ! grep -q "EXIT_CODE" ~/test_output.log 2>/dev/null; do sleep 15; done; grep -E "passed|failed|EXIT_CODE" ~/test_output.log'
+# Use timeout parameter: 600000 (10 min) for RCCL, 1800000 (30 min) for AGFHC, 7200000 (2 hr) for training
+```
+
+| Test Type | Bash Timeout (ms) |
+|-----------|-------------------|
+| Preflight, host_configs | 120000 (2 min) |
+| RCCL single collective | 600000 (10 min) |
+| RCCL full sweep | 1800000 (30 min) |
+| AGFHC level 1-3 | 1800000–7200000 (30 min – 2 hr) |
+| Training benchmarks | 7200000 (2 hr) |
+
 ### Reconnect After Disconnect
 
 If the user's connection drops mid-test:
@@ -1224,3 +1244,5 @@ exit code for post-incident review.
 18. Don't skip /tmp cleanup before tests — stale files from previous users cause PermissionError on HTML reports (Step 3.5)
 19. Don't rely only on HTML reports for results — always print a pass/fail markdown table in the terminal conversation
 20. Don't use `rccl_multinode_cvs.py` — the correct test file is `rccl_perf.py` (CVS 1.0 naming)
+21. Don't chain `sleep 30 && check; sleep 60 && check; sleep 90 && check` — use a single `while ! grep EXIT_CODE; do sleep 15; done` wait-loop with appropriate timeout (10 min for RCCL, 30 min for AGFHC, 2 hr for training)
+22. Don't use Bash `timeout: 120000` (2 min default) for long tests — set timeout to 600000 (10 min), 1800000 (30 min), or 7200000 (2 hr) based on test type

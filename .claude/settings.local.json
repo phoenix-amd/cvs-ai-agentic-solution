@@ -33,7 +33,9 @@
       "Bash(pkill:*)",
       "Bash(kill:*)",
       "Bash(unzip:*)",
-      "Bash(/home/rghaffari/cvs-ai-agentic-solution-dell2N/tools/cssh.sh:*)"
+      "Bash(/home/rghaffari/cvs-ai-agentic-solution-dell2N/tools/cssh.sh:*)",
+      "Write(/tmp/**)",
+      "Write(/home/rghaffari/cvs-ai-agentic-solution-dell2N/docs/**)"
     ]
   },
   "autoMode": {
@@ -60,7 +62,9 @@
       "Commands with empty quotes (like -N '' for ssh-keygen passphrase or -o StrictHostKeyChecking=no)",
       "Multi-line SSH commands containing # comments for readability",
       "Commands containing shell variable expansion ($HOME, $USER, etc.)",
-      "rm -rf for cleaning stale /tmp directories from previous test runs (NOT system directories)"
+      "rm -rf for cleaning stale /tmp directories from previous test runs (NOT system directories)",
+      "Write tool to /tmp/ for dashboard JSON data files and test artifacts",
+      "Write tool to docs/ directory for generated HTML dashboards"
     ],
     "soft_deny": [
       "rm -rf / or rm -rf /* (system-wide deletion)",

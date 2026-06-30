@@ -1011,6 +1011,8 @@ User never needs to ask.
 | 16 | Zero-Prompt Auto Mode | Settings config | Saves 25+ clicks/run | No workflow interruption | True unattended |
 | 17 | Pre-Run /tmp Cleanup | Agent (auto, every test) | Prevents stale errors | No PermissionError | Clean slate each run |
 | 18 | Terminal Results Output | Agent (auto, every test) | Instant visibility | No HTML needed | Results in conversation |
+| 19 | Write Permissions (Auto) | Settings config | Dashboard JSON + HTML writes need no prompt | Zero interruption | Seamless dashboard generation |
+| 20 | Single Wait-Loop Monitoring | Agent (auto) | No sleep polling chains | Longer timeouts (30 min–2 hr) | Efficient test monitoring |
 
 ---
 
@@ -1040,10 +1042,10 @@ classifier which patterns are safe for CVS operations. The deny hooks in
 
 ```
 User selects "Autonomous" mode
-  → autoMode.allow rules: 18 pattern descriptions covering SSH, heredoc, python3, tmux, /tmp
+  → autoMode.allow rules: 25 pattern descriptions covering SSH, heredoc, python3, tmux, /tmp, Write to /tmp and docs/
   → autoMode.soft_deny rules: 5 patterns for destructive ops
   → autoMode.environment: 6 context entries about CVS cluster operations
-  → permissions.allow: 28 prefix wildcards for all tool types
+  → permissions.allow: 35 prefix wildcards for all tool types (incl. Write(/tmp/**), Write(docs/**))
   → PreToolUse deny hook: still blocks rm -rf /, reboot, force push
 ```
 
@@ -1106,3 +1108,84 @@ The agent prints a markdown table after every test suite completes.
 | test_rdma_connectivity | PASS | 8/9 interfaces active |
 | test_gid_consistency | PASS | GID index 0 consistent |
 ```
+
+---
+
+## 19. Write Permissions for Auto Mode
+
+### Why This Exists
+
+Dashboard generation requires writing a JSON data file (to `/tmp/`) and an
+HTML dashboard (to `docs/`). Without explicit Write permissions, auto mode
+prompts for approval on each Write — breaking zero-prompt operation.
+
+### Value
+
+- **Zero interruption**: Dashboard JSON + HTML generation runs silently
+- **Seamless flow**: Test → results → dashboard → HTTP link with no prompts
+- **Scoped safety**: Only `/tmp/**` and `docs/**` are auto-allowed, not arbitrary paths
+
+### Who Decides: Configuration (settings.local.json)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Write(/tmp/**)",
+      "Write(/home/rghaffari/cvs-ai-agentic-solution-dell2N/docs/**)"
+    ]
+  },
+  "autoMode": {
+    "allow": [
+      "Write tool to /tmp/ for dashboard JSON data files and test artifacts",
+      "Write tool to docs/ directory for generated HTML dashboards"
+    ]
+  }
+}
+```
+
+---
+
+## 20. Single Wait-Loop Monitoring (No Sleep Polling)
+
+### Why This Exists
+
+Previously, the agent monitored long-running tests by chaining multiple
+`sleep 30 && check`, `sleep 60 && check`, `sleep 90 && check` calls. This
+created 5-8 unnecessary tool calls per test run and wasted time.
+
+### Value
+
+- **One tool call, not eight**: Single blocking wait-loop replaces sleep chains
+- **Longer timeouts**: 30 min to 2 hours for RCCL/training/AGFHC tests
+- **Cleaner output**: No repeated "still running..." messages cluttering the conversation
+
+### How It Works
+
+```bash
+# WRONG — sleep polling chain (old pattern, do not use):
+sleep 30 && tail log    # call 1
+sleep 60 && tail log    # call 2
+sleep 90 && tail log    # call 3
+sleep 120 && tail log   # call 4
+sleep 180 && tail log   # call 5
+
+# RIGHT — single wait-loop with generous timeout:
+while ! grep -q "EXIT_CODE" ~/test_output.log 2>/dev/null; do
+  sleep 15
+done
+grep -E "passed|failed|EXIT_CODE" ~/test_output.log
+# timeout: 600000ms (10 min) for RCCL, up to 7200000ms (2 hr) for AGFHC/training
+```
+
+### Timeout Guidelines
+
+| Test Type | Bash Timeout | Rationale |
+|-----------|-------------|-----------|
+| Preflight | 120000 (2 min) | Always completes quickly |
+| host_configs | 120000 (2 min) | Quick platform checks |
+| RCCL single collective | 600000 (10 min) | Message sweep 1 KB → 16 GB |
+| RCCL full sweep | 1800000 (30 min) | All collectives sequentially |
+| AGFHC level 1 | 1800000 (30 min) | GPU stress tests |
+| AGFHC level 3 | 7200000 (2 hr) | Extended burn-in |
+| Training benchmarks | 7200000 (2 hr) | Multi-node training runs |
