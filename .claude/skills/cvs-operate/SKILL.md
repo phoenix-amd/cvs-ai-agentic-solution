@@ -93,6 +93,34 @@ Jira escalation will just be skipped with a warning.
 | Component | `Cluster Administration` | For hardware escalation tickets |
 | Labels | `cvs-automated` | Always add this label for tracking |
 
+### SSH Wrapper — Clean Output (MANDATORY)
+
+AMD Conductor-managed nodes print an 18-line banner on every SSH connection
+(ASCII logo, auth reminders, etc.). This banner pollutes agent output and
+confuses parsing. **Always use the `cssh` wrapper instead of raw `ssh`.**
+
+```bash
+# Use this for ALL SSH commands (strips Conductor banner automatically):
+~/cvs-ai-agentic-solution-dell2N/tools/cssh.sh <user@host> '<command>'
+
+# Example:
+~/cvs-ai-agentic-solution-dell2N/tools/cssh.sh rghaffar@10.194.129.213 'hostname && cvs --version'
+# Output: clean command output only — no banner
+
+# For SCP (no wrapper needed — scp doesn't print banners)
+scp file.sh user@host:~/
+```
+
+**Alternatively**, pipe SSH through an inline filter:
+```bash
+ssh user@host 'command' 2>&1 | grep -vE 'Conductor|Reminder:|SSH key|___.*____|/  \|/  //'
+```
+
+**Rule**: If an SSH command returns output that includes "Conductor" or
+ASCII art, the agent failed to use the wrapper. Fix it and re-run.
+
+---
+
 ### Sanity Check (Run Immediately After Setup)
 
 After collecting user info, run this checklist to verify everything works
@@ -100,9 +128,9 @@ After collecting user info, run this checklist to verify everything works
 
 ```
 Sanity Check Routine:
-  1. SSH to head node            → ssh <head> 'hostname && cvs --version'
-  2. SSH head→self               → ssh <head> 'ssh <head_ip> hostname'
-  3. SSH head→worker(s)          → ssh <head> 'ssh <worker_ip> hostname'
+  1. SSH to head node            → cssh <head> 'hostname && cvs --version'
+  2. SSH head→self               → cssh <head> 'ssh <head_ip> hostname'
+  3. SSH head→worker(s)          → cssh <head> 'ssh <worker_ip> hostname'
   4. CVS installed               → ssh <head> 'cvs list | head -5'
   5. Jira search                 → jira_search("project = DCCS", limit=1)
   6. Jira create test ticket     → Create a test issue, then CLOSE it (no delete permission)
@@ -156,12 +184,23 @@ generate an interactive HTML dashboard and serve it via HTTP.
 ```bash
 # 1. Agent collects cluster data into JSON (template below)
 # 2. Generate HTML dashboard
-python3 tools/dashboard.py --input /tmp/cluster_data.json --output /tmp/dashboard.html
+python3 ~/cvs-ai-agentic-solution-dell2N/tools/dashboard.py \
+  --input ~/cvs-ai-agentic-solution-dell2N/docs/cluster_data_<cluster>_<YYYYMMDD>.json \
+  --output ~/cvs-ai-agentic-solution-dell2N/docs/dashboard_<cluster>_<YYYYMMDD>.html
 
-# 3. Serve via HTTP
-cd /tmp && python3 -m http.server 8888 &
-# Present: http://localhost:8888/dashboard.html
+# 3. Kill any existing server on port 7788, then start fresh
+pkill -f "http.server 7788" 2>/dev/null; sleep 1
+python3 -m http.server 7788 --directory ~/cvs-ai-agentic-solution-dell2N/docs &
+
+# 4. Print this clickable link in the conversation:
+#    http://localhost:7788/dashboard_<cluster>_<YYYYMMDD>.html
 ```
+
+**Rules:**
+- Dashboard is always dynamic — generated fresh from real test results
+- Never link to `sample_dashboard.html` as a live result (static guide only)
+- Always use port 7788 for the local HTTP server
+- If server already running, skip step 3 and just print the link
 
 ### Cluster Data JSON Template
 
@@ -691,6 +730,48 @@ ibdev2netdev    # Shows: mlx5_0 → ibp28s0, bnxt_re0 → ens28np0, etc.
 3. If the template env script references wrong NIC type → create a new one
 4. Ensure `NCCL_SOCKET_IFNAME` matches `mpi_oob_port`
 5. Copy the env script to **all nodes** before running
+
+### 3. Detect rccl-tests version and `-Z json` support (MANDATORY)
+
+Before running RCCL tests, **always detect** whether the installed rccl-tests
+binary supports JSON output (`-Z json -x <file>`). Older builds don't support
+this flag and will **silently exit** (run for ~6 seconds, write no output).
+
+```bash
+# On the head node, check rccl-tests version:
+cssh <head> '/opt/rccl-tests/build/all_reduce_perf --help 2>&1 | grep -i "json\|format\|-Z"'
+
+# If output contains "-Z" → NEW format (supports -Z json -x <file>)
+# If output is empty or no -Z → OLD format (parse stdout only)
+```
+
+| Version | CVS `rccl_result_file` config | Agent behavior |
+|---------|-------------------------------|----------------|
+| **NEW** (has `-Z`) | Set to a valid path like `/home/<user>/rccl_result_file.json` | CVS passes `-Z json -x` automatically; parse the JSON file |
+| **OLD** (no `-Z`) | Set to empty string `""` or remove the key | CVS parses stdout; agent reads results from CVS HTML report or pytest output |
+
+**Fix flow (run once, at RCCL config time):**
+```python
+import json, subprocess
+# Check if -Z is supported
+result = subprocess.run(
+    ["ssh", head, "/opt/rccl-tests/build/all_reduce_perf --help 2>&1"],
+    capture_output=True, text=True, shell=True
+)
+has_json = "-Z" in result.stdout or "-Z" in result.stderr
+
+cfg = json.load(open("rccl_config.json"))
+if has_json:
+    cfg["rccl"]["rccl_test_params"]["rccl_result_file"] = f"/home/{user}/rccl_result_file.json"
+else:
+    # OLD binary — disable JSON output to prevent silent failure
+    cfg["rccl"]["rccl_test_params"].pop("rccl_result_file", None)
+json.dump(cfg, open("rccl_config.json", "w"), indent=2)
+```
+
+**Never assume `-Z json` is supported.** Always check first.
+
+---
 
 ## RCCL Collective Selection
 
