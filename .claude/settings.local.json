@@ -64,7 +64,9 @@
       "Commands containing shell variable expansion ($HOME, $USER, etc.)",
       "rm -rf for cleaning stale /tmp directories from previous test runs (NOT system directories)",
       "Write tool to /tmp/ for dashboard JSON data files and test artifacts",
-      "Write tool to docs/ directory for generated HTML dashboards"
+      "Write tool to docs/ directory for generated HTML dashboards",
+      "All Atlassian MCP tool calls: jira_search, jira_get_issue, jira_create_issue, jira_update_issue, jira_add_comment, jira_get_transitions, jira_transition_issue, jira_get_agile_boards, jira_get_sprints_from_board, jira_get_sprint_issues, jira_get_board_issues, jira_get_project_issues, jira_get_all_projects, jira_get_project_components, jira_get_project_versions, jira_get_user_profile, jira_get_issue_watchers, jira_get_worklog, jira_create_issue_link, jira_get_link_types, jira_search_fields, jira_get_issue_development_info, jira_batch_create_issues, jira_delete_issue",
+      "All Confluence MCP tool calls: confluence_search, confluence_get_page, confluence_get_page_children, confluence_create_page, confluence_update_page, confluence_add_comment, confluence_get_comments, confluence_add_label, confluence_get_labels, confluence_search_user, confluence_get_page_views, confluence_get_page_history, confluence_get_page_diff, confluence_get_attachments, confluence_download_attachment, confluence_move_page"
     ],
     "soft_deny": [
       "rm -rf / or rm -rf /* (system-wide deletion)",
